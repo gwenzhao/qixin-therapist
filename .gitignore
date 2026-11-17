@@ -1,0 +1,23 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Secrets — never commit keys or environment files
+.env
+.env.*
+*.key
+*.pem
+secrets.*
+api-key.*
+
+# Local/test artifacts
+node_modules/
+.chrome-*/
+shot-*.png
+*.local
+*.log
+
+# Exports that may contain private reflections
+栖心V2-数据备份-*.json
+栖心V2-七幕档案-*.md

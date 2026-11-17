@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#1b2a23">
+<meta name="description" content="栖心 · 隐私说明与免责声明">
+<title>栖心 · 隐私与使用边界</title>
+<style>
+  :root{
+    --ink:#22302a; --ink-soft:#54645c; --ink-faint:#839189;
+    --paper:#f3eee4; --paper-2:#faf7f0; --forest:#1b2a23;
+    --gold:#ad8553; --clay:#b56e51; --line:rgba(34,48,42,.13);
+    --serif:"Songti SC","STSong","Noto Serif SC","SimSun",serif;
+    --sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:var(--sans); font-size:15px; line-height:1.8;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:780px; margin:0 auto; padding:38px 22px 70px}
+  .top{display:flex; align-items:center; justify-content:space-between; gap:18px; margin-bottom:42px}
+  .brand{display:flex; align-items:center; gap:11px; text-decoration:none; color:var(--ink)}
+  .mark{
+    display:grid; place-items:center; width:40px; height:40px;
+    border:1px solid rgba(34,48,42,.24); border-radius:50%;
+    font-family:var(--serif); font-size:18px; background:var(--paper-2);
+  }
+  .brand b{font-family:var(--serif); font-size:20px; font-weight:400; letter-spacing:.18em}
+  .brand small{display:block; margin-top:2px; color:var(--ink-faint); font-size:8px; letter-spacing:.16em}
+  .back{color:var(--ink-soft); font-size:10px; text-decoration:none; border-bottom:1px dotted rgba(34,48,42,.25); padding-bottom:2px}
+  .kicker{color:var(--gold); font-family:var(--mono,monospace); font-size:9px; letter-spacing:.2em; margin-bottom:7px}
+  h1{margin:0; font-family:var(--serif); font-size:clamp(30px,5vw,46px); font-weight:400; line-height:1.35; letter-spacing:.04em}
+  h1 em{font-style:normal; color:var(--clay)}
+  .lead{max-width:620px; margin:13px 0 0; color:var(--ink-soft); font-size:12px; line-height:1.9}
+  .stamp{margin-top:14px; color:var(--ink-faint); font-family:var(--mono,monospace); font-size:9px; letter-spacing:.06em}
+  .toc{display:flex; gap:8px; flex-wrap:wrap; margin:24px 0 0}
+  .toc a{padding:6px 11px; border:1px solid var(--line); border-radius:999px; color:var(--ink-soft); background:rgba(255,253,248,.4); font-size:10px; text-decoration:none}
+  .toc a:hover{background:var(--paper-2)}
+  section{margin-top:38px; padding-top:8px; border-top:1px solid var(--line)}
+  h2{font-family:var(--serif); font-size:26px; font-weight:400; letter-spacing:.05em; margin:0 0 15px}
+  h3{font-size:13px; font-weight:500; color:var(--ink-soft); margin:22px 0 6px}
+  p{margin:0 0 12px; color:var(--ink-soft); font-size:12px; line-height:1.95}
+  ul{margin:0 0 14px; padding-left:20px; color:var(--ink-soft); font-size:12px; line-height:1.95}
+  li{margin:4px 0}
+  strong{color:var(--ink); font-weight:500}
+  .note{padding:14px 16px; border-left:2px solid rgba(173,133,83,.5); background:rgba(236,224,204,.3); color:#6c654f; font-size:11px; line-height:1.85}
+  .crisis{padding:16px 17px; border:1px solid rgba(181,110,81,.24); border-radius:13px; background:rgba(239,221,211,.25); margin:18px 0}
+  .crisis b{color:#744c3d}
+  .crisis p{color:#744c3d; margin-bottom:4px}
+  footer{margin-top:48px; padding-top:18px; border-top:1px solid var(--line); color:var(--ink-faint); font-size:9px; line-height:1.8}
+  @media (max-width:620px){
+    .wrap{padding:24px 17px 55px}
+    .top{margin-bottom:30px}
+    .brand small{display:none}
+    h2{font-size:23px}
+    p,ul{font-size:11.5px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="brand" href="index.html">
+      <span class="mark">栖</span>
+      <span><b>栖心</b><small>SEVEN ACTS · ONE THREAD</small></span>
+    </a>
+    <a class="back" href="index.html">返回练习</a>
+  </div>
+
+  <div class="kicker">PRIVACY &amp; BOUNDARIES</div>
+  <h1>先照顾好安全，<br><em>再走进深处。</em></h1>
+  <p class="lead">这份页面说明栖心如何处理你的文字、什么时候会联系 DeepSeek，以及它不能替代什么。请在使用前阅读。</p>
+  <div class="stamp">生效日期：2026-11-17 · V2.1</div>
+  <div class="toc"><a href="#privacy">隐私说明</a><a href="#disclaimer">免责声明</a><a href="#crisis">危机资源</a></div>
+
+  <section id="privacy">
+    <h2>隐私说明</h2>
+    <p>栖心是一个静态网页。它没有项目作者运营的后端服务器、用户账号系统、统计工具或广告。这份说明解释页面在你的浏览器里保存什么、什么时候会把内容发送给 DeepSeek，以及你可以如何删除数据。</p>
+    <div class="note">这是一份面向使用者的说明，不构成法律意见。若你准备在特定地区公开运营，请根据当地法律和平台要求做进一步审查。</div>
+
+    <h3>1. 你的内容保存在哪里</h3>
+    <p>你写下的练习记录、每一幕的收束句、本次主线摘要和页面设置，保存在当前浏览器的 <strong>localStorage</strong> 中。相关键名包括：</p>
+    <ul>
+      <li><strong>qixin.therapist.v1.state</strong>：七幕练习记录与主线，未加密</li>
+      <li><strong>qixin.therapist.v1.consent</strong>：是否完成首次确认，不含练习内容</li>
+      <li><strong>qixin.therapist.v1.key</strong>：API Key，仅当前会话</li>
+      <li><strong>qixin.therapist.v1.key.remember</strong>：API Key，仅在主动勾选“记住”后写入</li>
+    </ul>
+    <p>这些数据不会发送到项目作者的服务器。但 localStorage <strong>没有加密</strong>，同一浏览器中的扩展、恶意脚本或其他能访问该页面的人，理论上可以读取。公共电脑、共享设备或他人可访问的浏览器不适合保存私密记录。</p>
+    <p>清理浏览器站点数据、使用无痕模式或更换浏览器/域名，会导致记录不可用或丢失。</p>
+
+    <h3>2. 什么时候会发送给 DeepSeek</h3>
+    <p>只有当你主动填写自己的 DeepSeek API Key，并在设置中连接成功后，AI 功能才会启用。启用后，以下内容会发送到 <strong>https://api.deepseek.com/chat/completions</strong>：</p>
+    <ul>
+      <li>你刚完成的那一层记录（事件、情绪、身体感受、需要、哀悼内容等）</li>
+      <li>本次主线中已经收束的摘要</li>
+      <li>当前幕与当前层的名称</li>
+      <li>用于“润色”的收束文本</li>
+    </ul>
+    <p>这些内容用于生成一段简短的注脚或润色结果。页面不会把整个浏览器的历史、其他网站的数据或你的 API Key 发送给项目作者。DeepSeek 如何保存和处理这些内容，取决于 DeepSeek 自己的服务条款与隐私政策。</p>
+    <p>如果不连接 API，页面只使用本地注脚，不会向 DeepSeek 发送内容。</p>
+
+    <h3>3. API Key</h3>
+    <ul>
+      <li>项目不包含任何内置 API Key</li>
+      <li>Key 只保存在你的浏览器中；默认使用 sessionStorage</li>
+      <li>只有勾选“在这台设备记住 Key”时，才会写入 localStorage</li>
+      <li>导出 JSON 时会排除 API Key</li>
+      <li>接口固定为 DeepSeek 官方地址，不提供自定义网关</li>
+    </ul>
+    <p>请不要在公共电脑上勾选“记住 Key”，也不要把自己的 Key 交给他人或公共代理。</p>
+
+    <h3>4. 我们不做的事</h3>
+    <ul>
+      <li>不收集姓名、手机号、邮箱或账号</li>
+      <li>不设置统计脚本、广告像素或第三方分析</li>
+      <li>不把内容出售给第三方</li>
+      <li>不把内容上传到项目作者自己的服务器</li>
+      <li>不建立用户画像</li>
+    </ul>
+
+    <h3>5. 删除你的数据</h3>
+    <p>可以在页面“设置与数据”中导出 JSON、导出 Markdown、重新开始本次记录。若需彻底删除：清空记录 → 清除该站点的浏览器数据（localStorage / sessionStorage）→ 到 DeepSeek 控制台管理或撤销对应 Key。</p>
+
+    <h3>6. 未成年人</h3>
+    <p>本页面面向成年人。未成年人不建议单独使用；如确有需要，应在监护人、咨询师或其他可信成年人的陪同下使用。</p>
+
+    <h3>7. 变更与联系</h3>
+    <p>如果这份说明发生重要变化，会在项目仓库中更新，并注明新的生效日期。如需反馈隐私问题，请在项目仓库中提交 issue；请不要在公开 issue 中粘贴 API Key、真实姓名或其他敏感信息。</p>
+  </section>
+
+  <section id="disclaimer">
+    <h2>免责声明与使用边界</h2>
+
+    <h3>1. 不是心理治疗</h3>
+    <p>栖心是一个自我探索与情绪书写工具。它<strong>不是</strong>心理治疗、心理咨询、精神科诊疗、医疗设备或临床评估工具，也<strong>不构成</strong>任何形式的诊断、处方或专业建议。页面中的问题、注脚、案例和文字，只用于帮助使用者整理自己的感受与叙事，不能替代受过训练的专业人员对你具体处境的理解。</p>
+
+    <h3>2. AI 会犯错</h3>
+    <p>连接 DeepSeek 后，页面会使用 AI 生成简短的注脚或润色文字。AI 可能误读你的意思、给出不准确或不适合你的表述、遗漏重要背景，或生成看似专业但没有依据的判断。请不要把 AI 的输出当作事实、诊断或行动指令。</p>
+
+    <h3>3. 不适合危机情况</h3>
+    <p>栖心不是危机干预服务。如果你有伤害自己或他人的念头、有具体的自杀计划或准备行为，或正处于暴力、性侵、虐待、人身危险中，请优先联系现实中的支持：一个可信任的人、一个安全且有人的地方，或以下资源。</p>
+
+    <h3>4. 哀悼与创伤内容</h3>
+    <p>“溯源”“哀悼”两幕可能触及童年经历、失去、创伤和强烈情绪。你可以随时停下，不需要一次写完，也不需要在这里完成“原谅”或“放下”。如果某一部分让你感到明显失控、解离、持续失眠或无法日常运转，请寻求专业帮助。</p>
+
+    <h3>5. 案例是虚构的</h3>
+    <p>页面中的“林岚（化名）”案例是虚构的教学性材料，用于展示一条可能的心理线索。它不是真实来访者，不对应任何具体个人，也不构成诊断示例。</p>
+
+    <h3>6. 不做保证</h3>
+    <p>本项目按“现状”提供，不保证页面永不中断、AI 输出准确完整、适合某一特定诊断/年龄/文化/危机程度，或使用后一定产生某种情绪或关系改善。</p>
+
+    <h3>7. 你的责任</h3>
+    <p>使用本页面即表示你理解：你需要为自己的选择、行动和 API 费用负责；你不应把页面内容作为医疗、法律、财务或其他专业建议；你不应在公共设备上保存高度私密的内容；你应遵守所在地区的法律和 DeepSeek 的服务条款。</p>
+
+    <h3>8. 未成年人</h3>
+    <p>本页面面向成年人。未成年人不建议单独使用；如确有需要，应在监护人、咨询师或其他可信成年人的陪同下使用。</p>
+  </section>
+
+  <section id="crisis">
+    <h2>危机资源</h2>
+    <div class="crisis">
+      <p><b>如果你或你认识的人正处于危险中，请优先保证安全：</b></p>
+      <p>急救：<strong>120</strong> · 报警：<strong>110</strong></p>
+      <p>全国心理援助热线：<strong>12356</strong>（以当地实际开通情况为准）</p>
+      <p>北京心理危机研究与干预中心：<strong>010-82951332</strong></p>
+    </div>
+    <p>请不要独自承担危机干预。联系一个真实的人，去一个有人的地方，先把安全放在第一位。</p>
+  </section>
+
+  <footer>
+    栖心 V2.1 · 七幕 · 一条线<br>
+    代码采用 MIT License。案例为虚构教学材料。<br>
+    <a href="index.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">返回练习</a>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,4379 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#1b2a23">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src https://api.deepseek.com; font-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none';">
+<meta name="description" content="栖心 V2.1：一个本地优先、用户自带 API Key 的七幕自我探索与情绪书写工具。">
+<meta name="referrer" content="no-referrer">
+<meta property="og:title" content="栖心 · 七幕 · 一条线">
+<meta property="og:description" content="一个本地优先的自我探索与情绪书写工具。七幕：看见、溯源、哀悼、接纳、重构、绽放、新生。">
+<meta property="og:type" content="website">
+<meta property="og:image" content="preview.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="栖心 · 七幕 · 一条线">
+<meta name="twitter:description" content="一个本地优先的自我探索与情绪书写工具。">
+<meta name="twitter:image" content="preview.png">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<title>栖心 V2.1 · 七幕 · 一条线</title>
+<style>
+/* ============================================================
+   栖心 V2 — 一条线
+   Prototype: 看见 → 溯源
+   Process leads. AI follows. One thread carries through.
+   ============================================================ */
+
+:root{
+  --ink:#22302a;
+  --ink-soft:#54645c;
+  --ink-faint:#839189;
+  --forest:#1b2a23;
+  --forest-2:#24372d;
+  --paper:#f3eee4;
+  --paper-2:#faf7f0;
+  --paper-3:#fffdf8;
+  --sage:#7d9788;
+  --sage-soft:#dfe8df;
+  --sage-pale:#edf2ec;
+  --clay:#b56e51;
+  --clay-soft:#efddd3;
+  --gold:#ad8553;
+  --gold-soft:#ece0cc;
+  --line:rgba(34,48,42,.13);
+  --line-soft:rgba(34,48,42,.075);
+  --shadow:0 28px 80px rgba(35,44,36,.11);
+  --shadow-soft:0 12px 36px rgba(35,44,36,.06);
+  --serif:"Songti SC","STSong","Noto Serif SC","Source Han Serif SC","SimSun",serif;
+  --sans:"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei","Noto Sans SC",system-ui,sans-serif;
+  --mono:"Cascadia Code","SFMono-Regular",Consolas,monospace;
+  --ease:cubic-bezier(.22,.68,.32,1);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  min-height:100dvh;
+  color:var(--ink);
+  background:var(--paper);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.75;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+button:disabled{cursor:not-allowed;opacity:.5}
+a{color:inherit}
+::selection{background:var(--gold-soft);color:var(--ink)}
+:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+svg{display:block}
+[hidden]{display:none !important}
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none;
+  opacity:.025;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode:multiply;
+}
+
+/* ============================================================
+   Frame
+   ============================================================ */
+.app{
+  display:grid;
+  grid-template-columns:282px minmax(0,1fr);
+  height:100dvh;
+  overflow:hidden;
+}
+
+/* ============================================================
+   Sidebar
+   ============================================================ */
+.sidebar{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  min-height:0;
+  padding:28px 21px 19px;
+  color:#eae4d7;
+  background:
+    radial-gradient(120% 55% at 8% 0%,rgba(173,133,83,.17),transparent 62%),
+    radial-gradient(90% 55% at 105% 92%,rgba(125,151,136,.14),transparent 60%),
+    linear-gradient(165deg,#203229 0%,#19271f 58%,#15211b 100%);
+  overflow:hidden;
+}
+.sidebar::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  opacity:.13;
+  pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg width='130' height='130' viewBox='0 0 130 130' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%23d8c6a2' stroke-opacity='.22'%3E%3Cpath d='M-20 65 Q25 20 65 65 T150 65'/%3E%3Cpath d='M-20 92 Q25 47 65 92 T150 92'/%3E%3C/g%3E%3C/svg%3E");
+  background-size:270px 270px;
+}
+.sidebar::after{
+  content:"";
+  position:absolute;
+  right:-85px;
+  top:25%;
+  width:190px;
+  height:190px;
+  border:1px solid rgba(233,222,201,.10);
+  border-radius:50%;
+  box-shadow:0 0 0 34px rgba(233,222,201,.025),0 0 0 70px rgba(233,222,201,.016);
+  pointer-events:none;
+}
+.sidebar > *{position:relative;z-index:1}
+.brand{display:flex;align-items:center;gap:12px;padding:0 5px}
+.brand-mark{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:45px;height:45px;
+  flex:none;
+  border:1px solid rgba(233,222,201,.32);
+  border-radius:50%;
+  color:#f4ecdc;
+  font-family:var(--serif);
+  font-size:21px;
+  background:radial-gradient(circle at 35% 30%,rgba(255,255,255,.13),transparent 58%);
+}
+.brand-mark::after{
+  content:"";
+  position:absolute;
+  top:3px;right:4px;
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 12px rgba(173,133,83,.75);
+}
+.brand-name{
+  font-family:var(--serif);
+  font-size:22px;
+  letter-spacing:.22em;
+  line-height:1.2;
+  color:#f5eedf;
+}
+.brand-sub{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-top:4px;
+  color:rgba(233,226,211,.48);
+  font-size:8.5px;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.brand-sub i{
+  width:3px;height:3px;
+  border-radius:50%;
+  background:var(--gold);
+  opacity:.8;
+  font-style:normal;
+}
+.date-line{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin:24px 6px 0;
+  color:rgba(233,226,211,.49);
+  font-size:10.5px;
+  letter-spacing:.05em;
+}
+.date-line .dot{width:3px;height:3px;border-radius:50%;background:rgba(233,226,211,.3)}
+.side-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:29px 7px 10px;
+  color:rgba(233,226,211,.42);
+  font-size:9.5px;
+  letter-spacing:.17em;
+}
+.side-label span:last-child{font-family:var(--mono);letter-spacing:.05em;color:rgba(233,226,211,.35)}
+.journey{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+  margin:0 -4px;
+  padding:0 4px;
+}
+.journey::before{
+  content:"";
+  position:absolute;
+  left:31px;
+  top:26px;
+  bottom:26px;
+  width:1px;
+  background:linear-gradient(to bottom,rgba(233,226,211,.17),rgba(233,226,211,.04));
+}
+.stage-link{
+  position:relative;
+  display:grid;
+  grid-template-columns:31px minmax(0,1fr) 18px;
+  align-items:center;
+  gap:10px;
+  width:100%;
+  min-height:58px;
+  padding:7px 9px;
+  border:0;
+  border-radius:13px;
+  color:rgba(239,234,222,.53);
+  background:transparent;
+  text-align:left;
+  transition:.25s var(--ease);
+}
+.stage-link:hover{background:rgba(245,239,227,.055);color:rgba(245,240,230,.88)}
+.stage-link.active{
+  color:#fbf6ea;
+  background:linear-gradient(90deg,rgba(245,239,227,.10),rgba(245,239,227,.035));
+  box-shadow:inset 0 0 0 1px rgba(245,239,227,.07);
+}
+.stage-link.active::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:16px;
+  bottom:16px;
+  width:2px;
+  border-radius:4px;
+  background:var(--gold);
+  box-shadow:0 0 14px rgba(173,133,83,.5);
+}
+.stage-num{
+  position:relative;
+  z-index:1;
+  display:grid;
+  place-items:center;
+  width:24px;height:24px;
+  margin-left:2px;
+  border:1px solid rgba(233,226,211,.18);
+  border-radius:50%;
+  color:rgba(239,234,222,.55);
+  background:#1b2821;
+  font-family:var(--mono);
+  font-size:8.5px;
+  transition:.25s;
+}
+.stage-link.active .stage-num{
+  border-color:rgba(173,133,83,.72);
+  color:#f5e9d2;
+  background:#2a3a30;
+  box-shadow:0 0 0 4px rgba(173,133,83,.08);
+}
+.stage-link.done .stage-num{
+  border-color:rgba(125,151,136,.62);
+  color:#dce8df;
+  background:#2a3a31;
+}
+.stage-copy{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.stage-copy b{
+  font-family:var(--serif);
+  font-size:16.5px;
+  font-weight:400;
+  letter-spacing:.16em;
+}
+.stage-copy small{
+  margin-top:5px;
+  overflow:hidden;
+  color:rgba(233,226,211,.32);
+  font-size:9.5px;
+  letter-spacing:.04em;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.stage-link.active .stage-copy small{color:rgba(233,226,211,.55)}
+.stage-state{display:grid;place-items:center;color:rgba(233,226,211,.28)}
+.stage-state svg{width:11px;height:11px;opacity:0;transform:scale(.6);transition:.25s}
+.stage-link.done .stage-state svg{opacity:1;transform:scale(1);color:#b9cbbd}
+.stage-link.active:not(.done) .stage-state::after{
+  content:"";
+  width:4px;height:4px;
+  border-radius:50%;
+  background:var(--gold);
+  box-shadow:0 0 9px rgba(173,133,83,.8);
+}
+.stage-link.locked{opacity:.38;cursor:pointer}
+.stage-link.locked:hover{background:transparent;color:rgba(239,234,222,.53)}
+.stage-link.locked .stage-copy small{color:rgba(233,226,211,.22)}
+.stage-link.locked .stage-state{font-size:8px;font-family:var(--mono);color:rgba(233,226,211,.25)}
+
+.side-thread{
+  margin:23px 5px 0;
+  padding:14px 13px 13px;
+  border:1px solid rgba(233,226,211,.10);
+  border-radius:14px;
+  background:linear-gradient(140deg,rgba(245,239,227,.055),rgba(245,239,227,.018));
+}
+.side-thread-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin-bottom:10px;
+  color:rgba(233,226,211,.44);
+  font-size:9px;
+  letter-spacing:.15em;
+}
+.side-thread-head span:last-child{color:var(--gold);font-family:var(--mono);font-size:8px}
+.side-thread-row{display:grid;grid-template-columns:44px minmax(0,1fr);gap:8px;padding:6px 0}
+.side-thread-row + .side-thread-row{border-top:1px solid rgba(233,226,211,.07)}
+.side-thread-row dt{margin:0;color:rgba(233,226,211,.34);font-size:9px;letter-spacing:.07em}
+.side-thread-row dd{margin:0;overflow:hidden;color:rgba(239,232,218,.67);font-family:var(--serif);font-size:11px;line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.side-thread-row dd.empty{color:rgba(233,226,211,.22);font-family:var(--sans);font-size:9.5px}
+.sidebar-foot{margin-top:auto;padding:18px 6px 0}
+.side-link{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  width:100%;
+  padding:8px 2px;
+  border:0;
+  color:rgba(239,233,221,.53);
+  background:transparent;
+  font-size:10.5px;
+  letter-spacing:.03em;
+  text-align:left;
+}
+.side-link:hover{color:#f5eddf}
+.side-link svg{width:13px;height:13px;flex:none;opacity:.8}
+.privacy-note{
+  display:flex;
+  align-items:flex-start;
+  gap:6px;
+  margin-top:9px;
+  padding-top:12px;
+  border-top:1px solid rgba(233,226,211,.07);
+  color:rgba(233,226,211,.27);
+  font-size:9px;
+  line-height:1.55;
+}
+.privacy-note svg{width:10px;height:10px;margin-top:3px;flex:none}
+
+/* ============================================================
+   Main
+   ============================================================ */
+.main{
+  position:relative;
+  display:grid;
+  grid-template-rows:auto auto minmax(0,1fr);
+  min-width:0;
+  min-height:0;
+  overflow:hidden;
+  background:
+    radial-gradient(60% 45% at 96% 0%,rgba(231,213,187,.38),transparent 70%),
+    radial-gradient(42% 55% at 0% 92%,rgba(203,217,205,.34),transparent 74%),
+    var(--paper);
+}
+.main::before{
+  content:"";
+  position:absolute;
+  top:-150px;right:-100px;
+  width:420px;height:420px;
+  border:1px solid rgba(173,133,83,.14);
+  border-radius:50%;
+  box-shadow:0 0 0 50px rgba(173,133,83,.022),0 0 0 100px rgba(173,133,83,.014);
+  pointer-events:none;
+}
+.topbar{
+  position:relative;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:20px;
+  padding:21px 38px 0;
+}
+.breadcrumb{display:flex;align-items:center;gap:9px;color:var(--ink-faint);font-size:9px;letter-spacing:.16em}
+.breadcrumb b{color:var(--ink-soft);font-family:var(--mono);font-weight:400;letter-spacing:.08em}
+.breadcrumb .slash{color:rgba(34,48,42,.25)}
+.breadcrumb .proto-pill{
+  padding:3px 7px;
+  border:1px solid rgba(173,133,83,.28);
+  border-radius:999px;
+  color:#8a6a43;
+  background:rgba(236,224,204,.36);
+  font-size:7.5px;
+  letter-spacing:.12em;
+}
+.top-actions{display:flex;align-items:center;gap:7px}
+.ghost-btn,.icon-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  color:var(--ink-soft);
+  background:rgba(255,253,248,.44);
+  transition:.2s var(--ease);
+}
+.ghost-btn{padding:8px 14px;font-size:10.5px;letter-spacing:.04em}
+.ghost-btn:hover,.icon-btn:hover{background:var(--paper-3);border-color:rgba(34,48,42,.22);color:var(--ink);transform:translateY(-1px)}
+.icon-btn{width:33px;height:33px;padding:0}
+.icon-btn svg{width:14px;height:14px}
+.support-btn{color:#8b5c47;border-color:rgba(181,110,81,.25);background:rgba(239,221,211,.22)}
+
+/* thread bar */
+.thread-bar{
+  position:relative;
+  z-index:2;
+  margin:17px 38px 0;
+  border:1px solid rgba(34,48,42,.11);
+  border-radius:16px;
+  background:linear-gradient(120deg,rgba(255,253,248,.66),rgba(255,253,248,.34));
+  box-shadow:0 3px 16px rgba(34,48,42,.025);
+  backdrop-filter:blur(12px);
+  overflow:hidden;
+}
+.thread-bar-main{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  min-height:44px;
+  padding:0 12px 0 15px;
+}
+.thread-emblem{
+  position:relative;
+  width:17px;height:17px;
+  flex:none;
+  border:1px solid rgba(173,133,83,.46);
+  border-radius:50%;
+}
+.thread-emblem::after{
+  content:"";
+  position:absolute;
+  inset:4px;
+  border-radius:50%;
+  background:var(--gold);
+  opacity:.72;
+}
+.thread-title{
+  flex:none;
+  color:#8a6a43;
+  font-size:9px;
+  letter-spacing:.16em;
+}
+.thread-preview{
+  flex:1;
+  min-width:0;
+  overflow:hidden;
+  color:var(--ink-soft);
+  font-family:var(--serif);
+  font-size:11.5px;
+  letter-spacing:.02em;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+}
+.thread-preview.empty{color:var(--ink-faint);font-family:var(--sans);font-size:10px}
+.thread-toggle{
+  flex:none;
+  padding:5px 8px;
+  border:1px solid transparent;
+  border-radius:999px;
+  color:var(--ink-faint);
+  background:transparent;
+  font-size:8.5px;
+}
+.thread-toggle:hover{color:var(--ink);background:var(--paper-3);border-color:var(--line-soft)}
+.thread-panel{
+  display:block;
+  max-height:310px;
+  padding:4px 15px 12px;
+  border-top:1px solid var(--line-soft);
+  overflow-y:auto;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(34,48,42,.14) transparent;
+}
+.thread-panel-row{
+  display:grid;
+  grid-template-columns:54px minmax(0,1fr);
+  gap:13px;
+  padding:9px 0;
+}
+.thread-panel-row + .thread-panel-row{border-top:1px dashed var(--line-soft)}
+.thread-panel-row dt{margin:0;color:var(--gold);font-size:8.5px;letter-spacing:.12em;line-height:1.8}
+.thread-panel-row dd{margin:0;color:var(--ink-soft);font-size:11px;line-height:1.75;white-space:pre-wrap}
+.thread-panel-row dd.empty{color:var(--ink-faint);font-size:10px}
+
+/* page */
+.page{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) 360px;
+  gap:28px;
+  min-height:0;
+  padding:0 38px 34px;
+}
+.stage-main{
+  min-width:0;
+  min-height:0;
+  overflow-y:auto;
+  padding:24px 4px 50px 0;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(34,48,42,.16) transparent;
+  animation:fadeUp .5s var(--ease) both;
+}
+.stage-main::-webkit-scrollbar,.companion-scroll::-webkit-scrollbar,.modal-body::-webkit-scrollbar{width:5px;height:5px}
+.stage-main::-webkit-scrollbar-thumb,.companion-scroll::-webkit-scrollbar-thumb,.modal-body::-webkit-scrollbar-thumb{background:rgba(34,48,42,.13);border-radius:8px}
+.stage-main::-webkit-scrollbar-track,.companion-scroll::-webkit-scrollbar-track,.modal-body::-webkit-scrollbar-track{background:transparent}
+
+/* stage head */
+.stage-head{max-width:680px;margin-bottom:18px;animation:fadeUp .55s var(--ease) both}
+.stage-eyebrow{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:7px;
+  color:var(--gold);
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.2em;
+}
+.stage-eyebrow::before{content:"";width:22px;height:1px;background:var(--gold);opacity:.6}
+.stage-head h1{
+  margin:0;
+  font-family:var(--serif);
+  font-size:clamp(40px,3.7vw,55px);
+  font-weight:400;
+  line-height:1.1;
+  letter-spacing:.12em;
+}
+.stage-head h1 em{font-style:normal;color:var(--clay)}
+.stage-head p{
+  max-width:590px;
+  margin:9px 0 0;
+  color:var(--ink-soft);
+  font-family:var(--serif);
+  font-size:14px;
+  line-height:1.8;
+}
+.stage-head p span{display:block;color:var(--ink-faint);font-family:var(--sans);font-size:10.5px;line-height:1.7}
+.stage-scope{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  margin-top:10px;
+  color:var(--ink-faint);
+  font-size:9px;
+  letter-spacing:.04em;
+}
+.stage-scope::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--sage)}
+.case-link{
+  margin-left:8px;
+  padding:2px 8px;
+  border:1px solid rgba(34,48,42,.13);
+  border-radius:999px;
+  color:#7e8b83;
+  background:rgba(255,253,248,.38);
+  font-size:8.5px;
+  letter-spacing:.03em;
+  line-height:1.5;
+  cursor:pointer;
+  transition:.2s;
+}
+.case-link:hover{color:var(--clay);border-color:rgba(181,110,81,.28);background:rgba(255,253,248,.85)}
+
+/* carry band */
+.carry-band{
+  display:grid;
+  grid-template-columns:72px minmax(0,1fr) auto;
+  align-items:center;
+  gap:14px;
+  margin-bottom:16px;
+  padding:13px 15px;
+  border:1px solid rgba(173,133,83,.24);
+  border-radius:15px;
+  background:linear-gradient(120deg,rgba(236,224,204,.48),rgba(255,253,248,.40));
+  animation:fadeUp .55s .05s var(--ease) both;
+}
+.carry-kicker{color:#8a6a43;font-size:8.5px;letter-spacing:.13em;line-height:1.5}
+.carry-quote{margin:0;color:#5e4a32;font-family:var(--serif);font-size:12px;line-height:1.7}
+.carry-quote::before{content:"「";color:var(--gold)}
+.carry-quote::after{content:"」";color:var(--gold)}
+.carry-back{
+  padding:4px 7px;
+  border:1px solid rgba(173,133,83,.22);
+  border-radius:999px;
+  color:#87673f;
+  background:rgba(255,253,248,.35);
+  font-size:8.5px;
+  white-space:nowrap;
+}
+.carry-back:hover{background:var(--paper-3)}
+
+/* depth rail */
+.depth-rail{
+  position:relative;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:0;
+  max-width:680px;
+  margin:22px 0 17px;
+  padding:0 6px;
+}
+.depth-rail::before{
+  content:"";
+  position:absolute;
+  left:8%;
+  right:8%;
+  top:13px;
+  height:1px;
+  background:linear-gradient(90deg,rgba(34,48,42,.14),rgba(34,48,42,.07));
+}
+.depth-item{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:7px;
+  padding:0 4px;
+  border:0;
+  background:transparent;
+  color:var(--ink-faint);
+  text-align:center;
+}
+.depth-dot{
+  display:grid;
+  place-items:center;
+  width:27px;height:27px;
+  border:1px solid rgba(34,48,42,.16);
+  border-radius:50%;
+  color:var(--ink-faint);
+  background:var(--paper);
+  font-family:var(--mono);
+  font-size:8.5px;
+  transition:.25s var(--ease);
+}
+.depth-label{font-size:9.5px;letter-spacing:.04em;line-height:1.4;white-space:nowrap}
+.depth-item.done{color:var(--ink-soft);cursor:pointer}
+.depth-item.done .depth-dot{border-color:rgba(125,151,136,.55);color:#476253;background:var(--sage-soft)}
+.depth-item.done .depth-dot::after{content:"✓";font-family:var(--sans);font-size:10px}
+.depth-item.done .depth-dot span{display:none}
+.depth-item.active{color:var(--ink)}
+.depth-item.active .depth-dot{
+  border-color:rgba(173,133,83,.72);
+  color:#74552f;
+  background:var(--gold-soft);
+  box-shadow:0 0 0 5px rgba(173,133,83,.07);
+}
+.depth-item.active .depth-label{color:var(--ink-soft)}
+.depth-item.future{opacity:.48}
+
+/* step card */
+.step-card{
+  position:relative;
+  scroll-margin-top:18px;
+  max-width:680px;
+  padding:29px 30px 25px;
+  border:1px solid rgba(34,48,42,.11);
+  border-radius:25px;
+  background:rgba(255,253,248,.72);
+  box-shadow:var(--shadow-soft);
+  backdrop-filter:blur(14px);
+  animation:cardIn .45s var(--ease) both;
+  overflow:hidden;
+}
+.step-card::after{
+  content:attr(data-step);
+  position:absolute;
+  right:22px;
+  top:12px;
+  color:rgba(173,133,83,.10);
+  font-family:var(--serif);
+  font-size:78px;
+  line-height:1;
+  pointer-events:none;
+}
+.step-kicker{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:9px;
+  color:var(--sage);
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+}
+.step-kicker::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.step-card h2{
+  position:relative;
+  z-index:1;
+  max-width:560px;
+  margin:0;
+  font-family:var(--serif);
+  font-size:clamp(23px,2.3vw,31px);
+  font-weight:400;
+  line-height:1.45;
+  letter-spacing:.02em;
+}
+.step-card h2 em{font-style:normal;color:var(--clay)}
+.step-card .step-desc{
+  position:relative;
+  z-index:1;
+  max-width:560px;
+  margin:8px 0 0;
+  color:var(--ink-faint);
+  font-size:11.5px;
+  line-height:1.8;
+}
+.step-fields{position:relative;z-index:1;margin-top:20px}
+.step-actions{position:relative;z-index:1;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:20px}
+.mini-note{color:var(--ink-faint);font-size:9.5px}
+
+/* fields */
+.field{margin-bottom:14px}
+.field:last-child{margin-bottom:0}
+.field-label{display:block;margin-bottom:7px;color:var(--ink-soft);font-size:10.5px;letter-spacing:.03em}
+.field-label .optional{color:var(--ink-faint);font-size:9px}
+textarea,input[type=text],input[type=password],input[type=url],select{
+  width:100%;
+  border:1px solid rgba(34,48,42,.13);
+  border-radius:13px;
+  color:var(--ink);
+  background:rgba(255,253,248,.74);
+  transition:.2s var(--ease);
+}
+textarea{
+  display:block;
+  min-height:105px;
+  padding:13px 15px;
+  line-height:1.8;
+  resize:vertical;
+}
+textarea::placeholder,input::placeholder{color:#98a19a;opacity:1}
+textarea:focus,input[type=text]:focus,input[type=password]:focus,input[type=url]:focus,select:focus{
+  outline:none;
+  border-color:rgba(173,133,83,.58);
+  background:var(--paper-3);
+  box-shadow:0 0 0 4px rgba(173,133,83,.08);
+}
+input[type=text],input[type=password],input[type=url],select{height:42px;padding:0 13px}
+input[type=text].compact{height:39px}
+select{cursor:pointer}
+.form-row{display:grid;grid-template-columns:170px minmax(0,1fr);gap:11px;align-items:end}
+.form-row .field{margin-bottom:0}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:7px 11px;
+  border:1px solid rgba(34,48,42,.13);
+  border-radius:999px;
+  color:var(--ink-soft);
+  background:rgba(255,253,248,.48);
+  font-size:11px;
+  line-height:1.2;
+  transition:.2s var(--ease);
+}
+.chip:hover{border-color:rgba(125,151,136,.5);background:rgba(255,253,248,.92);transform:translateY(-1px)}
+.chip.selected{border-color:rgba(125,151,136,.58);color:#355044;background:var(--sage-soft)}
+.chip.selected::before{content:"";width:4px;height:4px;border-radius:50%;background:var(--sage)}
+.chip.clay.selected{border-color:rgba(181,110,81,.46);color:#7b4230;background:var(--clay-soft)}
+.chip.clay.selected::before{background:var(--clay)}
+.chip-group + .chip-group{margin-top:14px}
+.chip-title{display:flex;align-items:center;gap:7px;margin:0 0 8px;color:var(--ink-faint);font-size:9.5px;letter-spacing:.06em}
+
+/* intensity */
+.intensity{display:flex;align-items:center;gap:12px;margin-top:17px;padding-top:13px;border-top:1px dashed var(--line-soft)}
+.intensity-label{flex:none;color:var(--ink-faint);font-size:9.5px;letter-spacing:.05em}
+.intensity-value{
+  display:grid;
+  place-items:center;
+  width:33px;height:33px;
+  flex:none;
+  border:1px solid rgba(181,110,81,.28);
+  border-radius:50%;
+  color:var(--clay);
+  background:rgba(255,253,248,.7);
+  font-family:var(--mono);
+  font-size:12px;
+}
+input[type=range]{width:100%;height:20px;margin:0;appearance:none;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:2px;border-radius:10px;background:linear-gradient(90deg,var(--clay) var(--val,50%),rgba(34,48,42,.12) var(--val,50%))}
+input[type=range]::-moz-range-track{height:2px;border-radius:10px;background:rgba(34,48,42,.12)}
+input[type=range]::-moz-range-progress{height:2px;background:var(--clay)}
+input[type=range]::-webkit-slider-thumb{appearance:none;width:14px;height:14px;margin-top:-6px;border:2px solid var(--paper-3);border-radius:50%;background:var(--clay);box-shadow:0 1px 5px rgba(34,48,42,.22)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border:2px solid var(--paper-3);border-radius:50%;background:var(--clay)}
+.range-ends{display:flex;justify-content:space-between;margin-top:1px;color:var(--ink-faint);font-size:8.5px}
+
+/* summary */
+.summary-card{
+  margin-top:15px;
+  padding:19px 20px;
+  border:1px solid rgba(125,151,136,.28);
+  border-radius:17px;
+  background:linear-gradient(145deg,rgba(237,242,236,.82),rgba(255,253,248,.56));
+}
+.summary-label{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:8px;
+  color:var(--sage);
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.14em;
+}
+.summary-text{
+  margin:0;
+  color:#3e5548;
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.85;
+  white-space:pre-wrap;
+}
+.summary-card textarea{
+  width:100%;
+  min-height:88px;
+  margin:0;
+  padding:0;
+  border:0;
+  border-radius:0;
+  background:transparent;
+  color:#3e5548;
+  font-family:var(--serif);
+  font-size:15.5px;
+  line-height:1.85;
+  box-shadow:none;
+  resize:vertical;
+}
+.summary-card textarea:focus{box-shadow:none;background:transparent}
+.summary-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.polish-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  padding:4px 0;
+  border:0;
+  color:#6d8677;
+  background:transparent;
+  font-size:9.5px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-color:rgba(109,134,119,.3);
+}
+.polish-btn:hover{color:var(--clay)}
+.polish-btn:disabled{opacity:.4}
+.summary-hint{margin-top:10px;color:var(--ink-faint);font-size:9.5px;line-height:1.65}
+
+/* buttons */
+.primary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:42px;
+  padding:0 18px;
+  border:1px solid transparent;
+  border-radius:999px;
+  color:#f9f4e9;
+  background:var(--forest);
+  font-size:11.5px;
+  letter-spacing:.04em;
+  box-shadow:0 8px 20px rgba(27,42,35,.14);
+  transition:.25s var(--ease);
+}
+.primary-btn:hover{background:#2b4034;transform:translateY(-1px);box-shadow:0 11px 24px rgba(27,42,35,.19)}
+.primary-btn svg{width:13px;height:13px;transition:transform .2s}
+.primary-btn:hover svg{transform:translateX(2px)}
+.primary-btn:disabled{transform:none;box-shadow:none}
+.secondary-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  min-height:36px;
+  padding:0 13px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  color:var(--ink-soft);
+  background:rgba(255,253,248,.46);
+  font-size:10px;
+  text-decoration:none;
+  transition:.2s var(--ease);
+}
+.secondary-btn:hover{background:var(--paper-3);border-color:rgba(34,48,42,.22)}
+.secondary-btn svg{width:12px;height:12px}
+.text-btn{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  padding:3px 0;
+  border:0;
+  color:var(--ink-faint);
+  background:transparent;
+  font-size:9.5px;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  text-decoration-color:rgba(34,48,42,.2);
+}
+.text-btn:hover{color:var(--clay);text-decoration-color:rgba(181,110,81,.4)}
+
+/* note */
+.soft-note{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  margin-top:13px;
+  padding:9px 11px;
+  border:1px dashed rgba(125,151,136,.30);
+  border-radius:11px;
+  color:#658071;
+  background:rgba(237,242,236,.38);
+  font-size:9.5px;
+  line-height:1.7;
+}
+.soft-note svg{width:11px;height:11px;flex:none;margin-top:3px}
+
+/* stage nav */
+.stage-nav{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:15px;
+  max-width:680px;
+  margin-top:19px;
+  padding-top:16px;
+  border-top:1px solid var(--line-soft);
+}
+.stage-nav .left{display:flex;align-items:center;gap:9px}
+.stage-nav-hint{color:var(--ink-faint);font-size:9.5px}
+
+/* companion */
+.companion{
+  align-self:start;
+  position:sticky;
+  top:0;
+  display:flex;
+  flex-direction:column;
+  min-height:390px;
+  max-height:calc(100dvh - 160px);
+  margin-top:24px;
+  padding:17px 18px 15px;
+  border:1px solid rgba(34,48,42,.12);
+  border-radius:25px;
+  background:rgba(255,252,245,.68);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(16px);
+  animation:fadeUp .6s .08s var(--ease) both;
+  overflow:hidden;
+}
+.companion-head{display:flex;align-items:center;gap:10px;padding-bottom:13px;border-bottom:1px solid var(--line-soft)}
+.companion-avatar{
+  position:relative;
+  display:grid;
+  place-items:center;
+  width:38px;height:38px;
+  flex:none;
+  overflow:hidden;
+  border:1px solid rgba(125,151,136,.36);
+  border-radius:50%;
+  color:#f6eddc;
+  background:linear-gradient(145deg,#728f7d,#3b5648);
+  box-shadow:inset 0 0 15px rgba(255,255,255,.13);
+}
+.companion-avatar::after{content:"";position:absolute;inset:5px;border:1px solid rgba(255,255,255,.20);border-radius:50%}
+.companion-avatar span{font-family:var(--serif);font-size:15px}
+.companion-head h2{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:0;
+  font-family:var(--serif);
+  font-size:15px;
+  font-weight:400;
+  letter-spacing:.08em;
+  line-height:1.2;
+}
+.companion-head h2 i{
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--sage);
+  box-shadow:0 0 9px rgba(125,151,136,.7);
+  font-style:normal;
+}
+.companion-status{
+  margin:3px 0 0;
+  color:var(--ink-faint);
+  font-size:8.5px;
+  letter-spacing:.02em;
+}
+.companion-status.connected{color:#5c7a67}
+.companion-scroll{
+  flex:1;
+  min-height:0;
+  overflow-y:auto;
+  padding:19px 1px 12px;
+  scrollbar-width:thin;
+  scrollbar-color:rgba(34,48,42,.12) transparent;
+}
+.reflection-kicker{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  margin-bottom:12px;
+  color:var(--gold);
+  font-family:var(--mono);
+  font-size:8px;
+  letter-spacing:.17em;
+  text-transform:uppercase;
+}
+.reflection-kicker::before{content:"";width:5px;height:5px;border-radius:50%;background:currentColor}
+.reflection-text{
+  min-height:150px;
+  color:var(--ink);
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.95;
+  letter-spacing:.015em;
+  white-space:pre-wrap;
+  animation:reflectionIn .45s var(--ease) both;
+}
+.reflection-text.placeholder{color:var(--ink-faint);font-size:13px;line-height:1.9}
+.reflection-text .typing-dots{display:inline-flex;gap:4px;margin-top:8px;vertical-align:middle}
+.reflection-text .typing-dots i{width:4px;height:4px;border-radius:50%;background:var(--sage);animation:typing 1.3s infinite}
+.reflection-text .typing-dots i:nth-child(2){animation-delay:.15s}
+.reflection-text .typing-dots i:nth-child(3){animation-delay:.3s}
+.reflection-sign{
+  margin-top:16px;
+  color:var(--ink-faint);
+  font-family:var(--serif);
+  font-size:10px;
+  letter-spacing:.12em;
+  text-align:right;
+}
+.reflection-sign::before{content:"—— ";}
+.reflection-error{
+  margin-top:10px;
+  color:#97604a;
+  font-size:8.5px;
+  line-height:1.6;
+}
+.companion-foot{
+  flex:none;
+  padding-top:11px;
+  border-top:1px solid var(--line-soft);
+  color:var(--ink-faint);
+  font-size:8px;
+  line-height:1.6;
+  text-align:center;
+}
+.companion-foot b{font-weight:500;color:var(--ink-soft)}
+
+/* ============================================================
+   Modals
+   ============================================================ */
+.modal-layer{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:rgba(17,26,21,.50);
+  backdrop-filter:blur(9px);
+  animation:fadeIn .22s ease both;
+}
+.modal{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  width:min(560px,100%);
+  max-height:min(87dvh,790px);
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:26px;
+  background:var(--paper-2);
+  box-shadow:0 35px 100px rgba(10,18,13,.34);
+  animation:modalUp .35s var(--ease) both;
+}
+.modal.wide{width:min(720px,100%)}
+.modal.narrow{width:min(465px,100%)}
+.modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:22px 24px 16px;border-bottom:1px solid var(--line-soft)}
+.modal-kicker{display:flex;align-items:center;gap:8px;margin-bottom:5px;color:var(--gold);font-family:var(--mono);font-size:8px;letter-spacing:.2em}
+.modal-kicker::before{content:"";width:17px;height:1px;background:var(--gold);opacity:.55}
+.modal-head h2{margin:0;font-family:var(--serif);font-size:24px;font-weight:400;line-height:1.35;letter-spacing:.03em}
+.modal-head p{margin:5px 0 0;color:var(--ink-faint);font-size:10px;line-height:1.7}
+.modal-close{display:grid;place-items:center;width:30px;height:30px;flex:none;border:1px solid var(--line);border-radius:50%;color:var(--ink-faint);background:transparent}
+.modal-close:hover{background:var(--paper-3);color:var(--ink)}
+.modal-close svg{width:12px;height:12px}
+.modal-body{padding:19px 24px 22px;overflow-y:auto}
+.modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:13px 24px 19px;border-top:1px solid var(--line-soft);background:rgba(250,247,240,.64)}
+
+/* settings */
+.setting-section{padding-bottom:18px;margin-bottom:18px;border-bottom:1px solid var(--line-soft)}
+.setting-section:last-child{padding-bottom:0;margin-bottom:0;border-bottom:0}
+.setting-section h3{display:flex;align-items:center;gap:7px;margin:0 0 4px;color:var(--ink-soft);font-size:11px;font-weight:500;letter-spacing:.05em}
+.setting-section h3 svg{width:12px;height:12px;color:var(--sage)}
+.setting-section > p{margin:0 0 12px;color:var(--ink-faint);font-size:10px;line-height:1.7}
+.key-wrap{position:relative}
+.key-wrap input{padding-right:58px;font-family:var(--mono);font-size:10.5px}
+.key-toggle{position:absolute;right:5px;top:5px;display:grid;place-items:center;width:46px;height:31px;border:0;border-radius:8px;color:var(--ink-faint);background:transparent;font-size:9px;white-space:nowrap}
+.key-toggle:hover{color:var(--ink);background:var(--sage-pale)}
+.check-label{display:flex;align-items:center;gap:7px;color:var(--ink-soft);font-size:10px;cursor:pointer}
+.check-label input{width:13px;height:13px;accent-color:var(--sage)}
+.advanced{margin-top:12px;border-top:1px dashed var(--line-soft);padding-top:9px}
+.advanced summary{cursor:pointer;color:var(--ink-faint);font-size:9.5px;letter-spacing:.03em;list-style:none}
+.advanced summary::-webkit-details-marker{display:none}
+.advanced summary::before{content:"＋";margin-right:5px;color:var(--gold);font-size:9px}
+.advanced[open] summary::before{content:"－"}
+.advanced-body{padding-top:11px}
+.connection-status{display:flex;align-items:center;gap:6px;min-height:16px;margin-top:8px;color:var(--ink-faint);font-size:9.5px;line-height:1.5}
+.connection-status .status-dot{width:5px;height:5px;flex:none;border-radius:50%;background:var(--ink-faint)}
+.connection-status.ok{color:#4d6b58}
+.connection-status.ok .status-dot{background:#5d8a6c;box-shadow:0 0 8px rgba(93,138,108,.5)}
+.connection-status.err{color:#965d45}
+.connection-status.err .status-dot{background:var(--clay)}
+.connection-status.loading .status-dot{background:var(--gold);animation:softPulse 1.2s infinite}
+.help-note{margin-top:10px;padding:9px 11px;border-radius:10px;background:rgba(236,224,204,.28);color:#7e6748;font-size:9px;line-height:1.65}
+.setting-section code{padding:1px 4px;border-radius:4px;background:rgba(34,48,42,.06);font-family:var(--mono);font-size:9px;color:#536a5c}
+.data-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.data-actions .secondary-btn{font-size:9.5px;min-height:33px}
+.danger-btn{color:#965d45;border-color:rgba(181,110,81,.25);background:rgba(239,221,211,.22)}
+.danger-btn:hover{background:var(--clay-soft);border-color:rgba(181,110,81,.4);color:#82412e}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* emergency support */
+.emergency-modal .modal-head h2{color:#6f4030}
+.emergency-steps{display:grid;gap:8px;margin:0 0 15px;padding:0;list-style:none}
+.emergency-step{display:flex;gap:10px;padding:10px 12px;border:1px solid rgba(181,110,81,.16);border-radius:12px;background:rgba(247,234,225,.27)}
+.emergency-step .n{display:grid;place-items:center;width:19px;height:19px;flex:none;border:1px solid rgba(181,110,81,.34);border-radius:50%;color:#8f533d;font-family:var(--mono);font-size:8px}
+.emergency-step p{margin:0;color:#744c3d;font-size:10.5px;line-height:1.7}
+.emergency-step b{display:block;color:#6c4333;font-weight:500}
+.crisis-lines{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:13px}
+.crisis-line{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 11px;border:1px solid rgba(181,110,81,.17);border-radius:11px;background:rgba(255,253,248,.5);color:#754939;font-size:9.5px;text-decoration:none}
+.crisis-line:hover{background:var(--paper-3)}
+.crisis-line b{font-family:var(--mono);font-size:11px;font-weight:400}
+.crisis-note{margin-top:12px;color:var(--ink-faint);font-size:8.5px;line-height:1.65}
+
+/* case reference */
+.case-modal .modal-body{padding-top:17px}
+.case-meta{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:7px;
+  color:#74847a;
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.06em;
+}
+.case-meta::before{
+  content:"";
+  width:5px;height:5px;
+  border-radius:50%;
+  background:var(--sage);
+}
+.case-intro{
+  margin:0 0 17px;
+  padding:12px 14px;
+  border-left:2px solid rgba(125,151,136,.35);
+  color:#7d8b83;
+  background:rgba(237,242,236,.34);
+  font-size:10.5px;
+  line-height:1.85;
+}
+.case-section{
+  display:grid;
+  grid-template-columns:62px minmax(0,1fr);
+  gap:13px;
+  padding:11px 0;
+  border-top:1px dashed rgba(34,48,42,.075);
+}
+.case-section-label{
+  padding-top:2px;
+  color:#9a855e;
+  font-family:var(--mono);
+  font-size:8.5px;
+  letter-spacing:.08em;
+  line-height:1.7;
+}
+.case-section-text{
+  margin:0;
+  color:#74827a;
+  font-family:var(--serif);
+  font-size:12px;
+  line-height:1.9;
+  white-space:pre-wrap;
+}
+.case-scroll-hint{
+  margin:0 0 8px;
+  color:#9aa39c;
+  font-size:8px;
+  text-align:right;
+  letter-spacing:.04em;
+}
+.case-note{
+  margin:17px 0 0;
+  padding:10px 12px;
+  border-radius:10px;
+  color:#8b9690;
+  background:rgba(236,224,204,.24);
+  font-size:9px;
+  line-height:1.7;
+}
+.case-note b{color:#7a6849;font-weight:500}
+
+/* handoff */
+.handoff-modal .modal-head{display:none}
+.handoff-card{position:relative;padding:38px 40px 31px;text-align:center;overflow:hidden}
+.handoff-card::before{
+  content:"";
+  position:absolute;
+  top:-120px;right:-90px;
+  width:300px;height:300px;
+  border:1px solid rgba(173,133,83,.17);
+  border-radius:50%;
+  box-shadow:0 0 0 34px rgba(173,133,83,.028),0 0 0 68px rgba(173,133,83,.016);
+}
+.handoff-card .handoff-mark{
+  display:grid;
+  place-items:center;
+  width:48px;height:48px;
+  margin:0 auto 17px;
+  border:1px solid rgba(173,133,83,.42);
+  border-radius:50%;
+  color:var(--gold);
+  font-family:var(--serif);
+  font-size:18px;
+  transform:rotate(-5deg);
+}
+.handoff-card .modal-kicker{justify-content:center}
+.handoff-card .modal-kicker::before{display:none}
+.handoff-card h2{margin:0;font-family:var(--serif);font-size:29px;font-weight:400;line-height:1.5;letter-spacing:.03em}
+.handoff-card h2 em{font-style:normal;color:var(--clay)}
+.handoff-quote{
+  max-width:450px;
+  margin:18px auto 0;
+  padding:16px 19px;
+  border-top:1px solid rgba(173,133,83,.25);
+  border-bottom:1px solid rgba(173,133,83,.25);
+  color:#4f6456;
+  font-family:var(--serif);
+  font-size:16px;
+  line-height:1.9;
+}
+.handoff-quote::before{content:"「";color:var(--gold)}
+.handoff-quote::after{content:"」";color:var(--gold)}
+.handoff-card p{margin:14px 0 0;color:var(--ink-faint);font-size:10px;line-height:1.8}
+.handoff-actions{display:flex;justify-content:center;gap:9px;margin-top:21px;flex-wrap:wrap}
+
+/* completion */
+.complete-wrap{padding:26px 26px 24px}
+.complete-card{
+  padding:25px 26px 22px;
+  border:1px solid rgba(173,133,83,.30);
+  border-radius:16px;
+  background:rgba(255,253,248,.56);
+  text-align:center;
+}
+.complete-seal{
+  display:grid;
+  place-items:center;
+  width:51px;height:51px;
+  margin:0 auto 12px;
+  border:1px solid rgba(181,110,81,.44);
+  border-radius:50%;
+  color:var(--clay);
+  font-family:var(--serif);
+  font-size:9.5px;
+  line-height:1.2;
+  transform:rotate(-6deg);
+}
+.complete-card h2{margin:0;font-family:var(--serif);font-size:26px;font-weight:400;letter-spacing:.1em}
+.complete-card > p{margin:7px 0 0;color:var(--ink-faint);font-size:9.5px}
+.complete-acts{margin-top:5px;color:var(--ink-faint);font-size:9px;letter-spacing:.13em;line-height:1.7}
+.complete-scroll-hint{margin:0 0 9px;color:var(--ink-faint);font-size:8.5px;text-align:right;letter-spacing:.04em}
+.complete-thread{margin:19px 0 0;padding:15px 0 0;border-top:1px solid var(--line-soft);text-align:left}
+.complete-thread-row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:10px;padding:7px 0}
+.complete-thread-row + .complete-thread-row{border-top:1px dashed var(--line-soft)}
+.complete-thread-row dt{margin:0;color:var(--gold);font-size:8px;letter-spacing:.1em;line-height:1.9}
+.complete-thread-row dd{margin:0;color:var(--ink-soft);font-family:var(--serif);font-size:11px;line-height:1.8;white-space:pre-wrap}
+.complete-thread-row dd.empty{color:var(--ink-faint);font-family:var(--sans);font-size:9.5px}
+.next-act-note{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-top:15px;
+  padding:10px 12px;
+  border:1px dashed rgba(125,151,136,.28);
+  border-radius:11px;
+  color:#678071;
+  background:rgba(237,242,236,.36);
+  font-size:9.5px;
+  line-height:1.65;
+}
+.next-act-note b{font-weight:500;color:#486354}
+
+/* first-visit consent */
+.consent-layer{
+  position:fixed;
+  inset:0;
+  z-index:2000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:rgba(17,26,21,.58);
+  backdrop-filter:blur(10px);
+  animation:fadeIn .25s ease both;
+}
+.consent-card{
+  width:min(600px,100%);
+  max-height:90dvh;
+  overflow-y:auto;
+  padding:32px 34px 27px;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:26px;
+  background:linear-gradient(155deg,#fbf8f1,#f2eadc);
+  box-shadow:0 35px 100px rgba(10,18,13,.34);
+  animation:modalUp .4s var(--ease) both;
+}
+.consent-mark{
+  display:grid;
+  place-items:center;
+  width:46px;height:46px;
+  margin-bottom:16px;
+  border:1px solid rgba(34,48,42,.24);
+  border-radius:50%;
+  color:var(--forest);
+  font-family:var(--serif);
+  font-size:19px;
+  transform:rotate(-5deg);
+}
+.consent-kicker{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-bottom:6px;
+  color:var(--gold);
+  font-family:var(--mono);
+  font-size:8px;
+  letter-spacing:.2em;
+}
+.consent-kicker::before{content:"";width:18px;height:1px;background:var(--gold);opacity:.55}
+.consent-card h2{
+  margin:0;
+  font-family:var(--serif);
+  font-size:clamp(24px,3vw,31px);
+  font-weight:400;
+  line-height:1.5;
+  letter-spacing:.02em;
+}
+.consent-card h2 em{font-style:normal;color:var(--clay)}
+.consent-lead{
+  margin:10px 0 0;
+  color:var(--ink-soft);
+  font-size:11px;
+  line-height:1.85;
+}
+.consent-list{
+  display:grid;
+  gap:8px;
+  margin:17px 0 16px;
+  padding:14px 15px;
+  border:1px solid rgba(34,48,42,.09);
+  border-radius:13px;
+  background:rgba(255,253,248,.48);
+  list-style:none;
+}
+.consent-list li{
+  position:relative;
+  padding-left:13px;
+  color:#5f6f66;
+  font-size:10px;
+  line-height:1.75;
+}
+.consent-list li::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:.72em;
+  width:4px;height:4px;
+  border-radius:50%;
+  background:var(--sage);
+}
+.consent-list b{color:#465b4e;font-weight:500}
+.consent-checks{display:grid;gap:9px;margin-bottom:16px}
+.consent-check{
+  display:flex;
+  align-items:flex-start;
+  gap:8px;
+  color:#5d6d64;
+  font-size:10px;
+  line-height:1.7;
+  cursor:pointer;
+}
+.consent-check input{
+  width:14px;height:14px;
+  flex:none;
+  margin-top:2px;
+  accent-color:var(--sage);
+}
+.consent-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.consent-actions .primary-btn:disabled{opacity:.42;box-shadow:none;transform:none}
+.consent-foot{
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(34,48,42,.08);
+  color:#8a958e;
+  font-size:8.5px;
+  line-height:1.6;
+}
+.consent-foot a{color:#7f6642;text-decoration:underline;text-underline-offset:3px}
+
+/* toast */
+.toast-root{position:fixed;left:50%;bottom:26px;z-index:1200;display:flex;flex-direction:column;align-items:center;gap:8px;transform:translateX(-50%);pointer-events:none}
+.toast{padding:9px 15px;border:1px solid rgba(255,255,255,.10);border-radius:999px;color:#f5efe3;background:rgba(27,42,35,.92);font-size:10px;letter-spacing:.02em;box-shadow:0 8px 26px rgba(10,18,13,.22);animation:toastIn .3s var(--ease) both}
+.toast.out{animation:toastOut .28s ease both}
+
+/* ============================================================
+   Motion
+   ============================================================ */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes cardIn{from{opacity:0;transform:translateY(8px) scale(.995)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes reflectionIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+@keyframes modalUp{from{opacity:0;transform:translateY(13px) scale(.988)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes typing{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-3px);opacity:1}}
+@keyframes softPulse{0%,100%{opacity:.35;transform:scale(1)}50%{opacity:.85;transform:scale(1.12)}}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateY(6px) scale(.98)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important;scroll-behavior:auto !important}
+}
+
+/* ============================================================
+   Responsive
+   ============================================================ */
+@media (max-width:1240px){
+  .app{grid-template-columns:258px minmax(0,1fr)}
+  .page{grid-template-columns:minmax(0,1fr) 330px;gap:22px;padding-left:31px;padding-right:31px}
+  .topbar,.thread-bar{padding-left:31px;padding-right:31px}
+  .thread-bar{margin-left:31px;margin-right:31px;padding-left:0;padding-right:0}
+  .stage-head h1{font-size:clamp(38px,3.6vw,49px)}
+}
+@media (max-width:1080px){
+  .app{height:auto;min-height:100dvh;grid-template-columns:238px minmax(0,1fr);overflow:visible}
+  .sidebar{height:100dvh;position:sticky;top:0}
+  .main{min-height:100dvh;overflow:visible}
+  .page{grid-template-columns:1fr;padding-bottom:39px}
+  .stage-main{overflow:visible;padding-right:0}
+  .companion{position:relative;top:auto;max-height:none;min-height:0;margin-top:0;padding:17px 18px 14px}
+  .companion-scroll{overflow:visible}
+  .reflection-text{min-height:0}
+  .companion-foot{padding-top:10px}
+  .stage-nav{max-width:none}
+  .depth-rail,.stage-head,.step-card,.carry-band{max-width:none}
+}
+@media (max-width:860px){
+  .app{display:block}
+  .sidebar{
+    position:sticky;
+    top:0;
+    z-index:50;
+    display:block;
+    width:100%;
+    height:auto;
+    padding:12px 16px 10px;
+    overflow:visible;
+    background:linear-gradient(110deg,#203229,#19261f);
+  }
+  .sidebar::after{display:none}
+  .brand{display:none}
+  .date-line{margin:0 0 8px 2px;font-size:9px;letter-spacing:.02em}
+  .side-label,.side-thread,.sidebar-foot,.privacy-note{display:none}
+  .journey{flex-direction:row;gap:5px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+  .journey::-webkit-scrollbar{display:none}
+  .journey::before{display:none}
+  .stage-link{
+    grid-template-columns:23px auto;
+    gap:7px;
+    width:auto;
+    min-width:83px;
+    min-height:38px;
+    padding:5px 9px;
+    border-radius:10px;
+    flex:none;
+  }
+  .stage-link.active::before{top:auto;bottom:0;left:10px;right:10px;width:auto;height:2px}
+  .stage-num{width:21px;height:21px;font-size:8px;margin-left:0}
+  .stage-copy b{font-size:14px;letter-spacing:.08em}
+  .stage-copy small{display:none}
+  .stage-state{display:none}
+  .main{min-height:0;overflow:visible}
+  .main::before{display:none}
+  .topbar{padding:15px 20px 0}
+  .thread-bar{margin:13px 20px 0}
+  .thread-panel{grid-template-columns:1fr;padding-left:13px;padding-right:13px}
+  .thread-panel-row{grid-template-columns:48px minmax(0,1fr);gap:9px}
+  .page{padding:0 20px 30px}
+  .stage-main{padding-top:20px}
+  .stage-head h1{font-size:46px}
+  .stage-head p{font-size:13px}
+  .carry-band{grid-template-columns:1fr;gap:7px;padding:12px 13px}
+  .carry-kicker,.carry-quote,.carry-back{grid-column:1;grid-row:auto}
+  .carry-quote{font-size:11.5px}
+  .carry-back{justify-self:start;margin-top:2px}
+  .depth-rail{overflow-x:auto;padding-bottom:3px;gap:2px}
+  .depth-item{min-width:76px}
+  .reflection-text{font-size:15px}
+}
+@media (max-width:620px){
+  .topbar{padding:12px 16px 0}
+  .breadcrumb{font-size:8px;letter-spacing:.1em}
+  .breadcrumb .proto-pill{padding:2px 6px}
+  .top-actions .ghost-btn{padding:7px 10px;font-size:9.5px}
+  .thread-bar{margin-left:16px;margin-right:16px}
+  .thread-bar-main{padding-left:12px;padding-right:9px;gap:9px}
+  .thread-title{font-size:8px;letter-spacing:.1em}
+  .thread-preview{font-size:10.5px}
+  .thread-toggle{font-size:8px;padding-left:5px;padding-right:5px}
+  .page{padding:0 16px 24px}
+  .stage-main{padding-top:17px;padding-bottom:34px}
+  .stage-head h1{font-size:39px;letter-spacing:.08em}
+  .stage-head p{font-size:12px}
+  .stage-head p span{font-size:9.5px}
+  .stage-scope{font-size:8.5px}
+  .depth-rail{margin-top:17px;margin-bottom:13px}
+  .depth-item{min-width:66px}
+  .depth-label{font-size:8.5px}
+  .depth-dot{width:24px;height:24px;font-size:8px}
+  .step-card{padding:23px 18px 20px;border-radius:21px}
+  .step-card::after{font-size:60px;right:14px;top:9px}
+  .step-card h2{font-size:22px}
+  .step-desc{font-size:10.5px}
+  .form-row,.two-col,.form-grid{grid-template-columns:1fr}
+  .form-row .field{margin-bottom:12px}
+  .step-actions{gap:10px}
+  .step-actions .mini-note{width:100%}
+  .summary-card{padding:15px 14px}
+  .summary-text{font-size:14.5px}
+  .summary-card textarea{font-size:14px;min-height:110px}
+  .stage-nav{flex-direction:column;align-items:flex-start;gap:9px}
+  .companion{padding:14px 14px 12px;border-radius:20px}
+  .reflection-text{font-size:14.5px}
+  .modal-layer{padding:11px;align-items:end}
+  .consent-layer{padding:11px;align-items:end}
+  .consent-card{padding:25px 21px 22px;border-radius:21px}
+  .consent-list{padding:12px}
+  .consent-list li{font-size:9.5px}
+  .modal{max-height:92dvh;border-radius:21px}
+  .modal-head{padding:18px 18px 13px}
+  .modal-head h2{font-size:20px}
+  .modal-body{padding:16px 18px 19px}
+  .modal-foot{padding:11px 18px 15px}
+  .handoff-card{padding:29px 20px 25px}
+  .handoff-card h2{font-size:23px}
+  .handoff-quote{font-size:14px;margin-top:14px}
+  .complete-wrap{padding:17px 17px 16px}
+  .complete-card{padding:20px 16px 17px}
+  .complete-card h2{font-size:22px}
+  .complete-thread-row{grid-template-columns:42px minmax(0,1fr);gap:8px}
+}
+@media (max-width:380px){
+  .stage-link{min-width:74px;padding-left:7px;padding-right:7px}
+  .stage-copy b{font-size:13px}
+  .stage-head h1{font-size:35px}
+  .thread-title{display:none}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar" aria-label="七幕路径">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">栖</div>
+      <div>
+        <div class="brand-name">栖心</div>
+        <div class="brand-sub"><i></i>V2.1 · 一条线</div>
+      </div>
+    </div>
+    <div class="date-line"><span id="todayLabel">11月4日星期三</span><span class="dot"></span><span id="greeting">夜很深了，先安顿自己</span></div>
+    <div class="side-label"><span>七幕路径</span><span>SEVEN ACTS</span></div>
+    <nav class="journey" id="journeyNav" aria-label="疗愈阶段"></nav>
+    <div class="side-thread">
+      <div class="side-thread-head"><span>本次主线</span><span>THREAD</span></div>
+      <dl>
+        <div class="side-thread-row"><dt>我看见</dt><dd id="sideSee" class="empty">尚未形成</dd></div>
+        <div class="side-thread-row"><dt>它来自</dt><dd id="sideTrace" class="empty">尚未形成</dd></div>
+        <div class="side-thread-row"><dt>我告别</dt><dd id="sideMourn" class="empty">尚未形成</dd></div>
+        <div class="side-thread-row"><dt>我选择</dt><dd id="sideChoice" class="empty">尚未形成</dd></div>
+      </dl>
+    </div>
+    <div class="sidebar-foot">
+      <button class="side-link" type="button" id="settingsBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+        <span>设置与数据</span>
+      </button>
+      <div class="privacy-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="10" width="14" height="10" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+        <span>不注册。默认只留本机；连接 API 后，注脚内容会发送给 DeepSeek。</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="breadcrumb">
+        <b>栖心</b><span class="slash">/</span><span>V2.1 · 七幕</span>
+        <span class="proto-pill">看见 → 新生</span>
+      </div>
+      <div class="top-actions">
+        <button class="ghost-btn" type="button" id="threadTopBtn">主线</button>
+        <button class="icon-btn support-btn" type="button" id="supportBtn" aria-label="此刻很难受，打开即时支持" title="此刻很难受？">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"></path><path d="M12 8v4M12 15h.01"></path></svg>
+        </button>
+        <button class="icon-btn" type="button" id="settingsBtnTop" aria-label="设置与数据" title="设置与数据">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="thread-bar">
+      <div class="thread-bar-main">
+        <span class="thread-emblem" aria-hidden="true"></span>
+        <span class="thread-title">本次主线</span>
+        <span class="thread-preview empty" id="threadPreview">尚未形成</span>
+        <button class="thread-toggle" type="button" id="threadToggle">展开</button>
+      </div>
+      <div class="thread-panel" id="threadPanel" hidden=""></div>
+    </div>
+
+    <div class="page">
+      <section class="stage-main" id="stageMain" aria-live="polite"></section>
+      <aside class="companion" aria-label="栖心的注脚">
+        <div class="companion-head">
+          <div class="companion-avatar"><span>栖</span></div>
+          <div>
+            <h2>栖心 <i aria-hidden="true"></i></h2>
+            <p class="companion-status" id="companionStatus">本地注脚</p>
+          </div>
+        </div>
+        <div class="companion-scroll">
+          <div class="reflection-kicker" id="reflectionKicker">此刻的注脚</div>
+          <div class="reflection-text placeholder" id="reflectionText" aria-live="polite">我在这里。我们不急着分析，先把刚才那一刻放慢。你可以从写下那个具体画面开始。</div>
+          <div class="reflection-sign" id="reflectionSign">栖心</div>
+          <div class="reflection-error" id="reflectionError" hidden=""></div>
+        </div>
+        <div class="companion-foot"><b>这一版，栖心不追问。</b><br>它只在每一层写完后回应，不接管你的节奏。</div>
+      </aside>
+    </div>
+  </main>
+</div>
+
+<div class="toast-root" id="toastRoot" aria-live="polite"></div>
+<div class="modal-root" id="modalRoot"></div>
+
+<script>
+/* ============================================================
+   栖心 V2.1 · 七幕 · 一条线
+   A local-first, BYOK self-reflection companion.
+   No backend. No analytics. No bundled API key.
+   ============================================================ */
+'use strict';
+
+const STORAGE_KEY = 'qixin.therapist.v1.state';
+const CONSENT_KEY = 'qixin.therapist.v1.consent';
+const KEY_SESSION = 'qixin.therapist.v1.key';
+const KEY_LOCAL = 'qixin.therapist.v1.key.remember';
+const LEGACY_KEY_NAMES = [
+  'qixin.v2.key', 'qixin.v2.key.remember',
+  'qixin.v2.1.key', 'qixin.v2.1.key.remember'
+];
+const API_ENDPOINT = 'https://api.deepseek.com/chat/completions';
+
+const STAGE_META = {
+  see: {
+    num: '01', label: '看见', en: 'SEE', eyebrow: '第一幕 · SEE',
+    title: '看见',
+    lead: '先把此刻，放到光里。',
+    sub: '不急着解释，也不急着改变。这一幕只做一件事：把此刻看清楚，然后带走一句最诚实的话。',
+    scope: '三层深入 + 一次收束'
+  },
+  trace: {
+    num: '02', label: '溯源', en: 'TRACE', eyebrow: '第二幕 · TRACE',
+    title: '溯源',
+    lead: '往回看，是为了理解。',
+    sub: '不是追责，也不是找到一个唯一的原因。只是带着上一幕的那句话，看看它最早从哪里来，以及那时的你如何撑了过来。',
+    scope: '带着一句话来，带走一条来路'
+  },
+  mourn: {
+    num: '03', label: '哀悼', en: 'MOURN', eyebrow: '第三幕 · MOURN',
+    title: '哀悼',
+    lead: '有些东西，值得被好好告别。',
+    sub: '哀悼不是沉溺，也不是原谅谁。它只是承认：那里确实失去过一些东西，然后允许自己为它难过。可以慢慢来，也可以随时停下。',
+    scope: '带着一条来路来，带走一句告别'
+  },
+  accept: {
+    num: '04', label: '接纳', en: 'ACCEPT', eyebrow: '第四幕 · ACCEPT',
+    title: '接纳',
+    lead: '允许它存在，不再和自己打架。',
+    sub: '接纳不是认命，也不是喜欢发生的事。它更像是停止用“我不该这样”，额外伤害自己。',
+    scope: '带着一句告别来，带走一句允许'
+  },
+  reframe: {
+    num: '05', label: '重构', en: 'REFRAME', eyebrow: '第五幕 · REFRAME',
+    title: '重构',
+    lead: '事实是发生的事，故事是你讲给自己的解释。',
+    sub: '我们不是要把黑的说成白的，而是把被情绪压缩成一条的叙事，重新展开一点。',
+    scope: '带着允许来，带走一个更完整的故事'
+  },
+  bloom: {
+    num: '06', label: '绽放', en: 'BLOOM', eyebrow: '第六幕 · BLOOM',
+    title: '绽放',
+    lead: '你不需要完美，才值得绽放。',
+    sub: '生命力不总是轰轰烈烈。它也可能是一次散步、一句真话、一个愿意为自己停下来的瞬间。',
+    scope: '带着新故事来，带走一颗种子'
+  },
+  renew: {
+    num: '07', label: '新生', en: 'RENEW', eyebrow: '第七幕 · RENEW',
+    title: '新生',
+    lead: '把走过的路，收拢成新的叙事。',
+    sub: '疗愈不是把过去抹掉，而是让过去回到它该在的位置，同时为“我现在选择怎样活”留出空间。',
+    scope: '带着五幕来，带走一条可以继续走的路'
+  }
+};
+
+const STAGE_ORDER = ['see', 'trace', 'mourn', 'accept', 'reframe', 'bloom', 'renew'];
+const PREV_STAGE = {
+  trace: 'see', mourn: 'trace', accept: 'mourn', reframe: 'accept', bloom: 'reframe', renew: 'bloom'
+};
+const STAGE_SHORT = {
+  see: '此刻，发生了什么', trace: '它从哪里来', mourn: '与失去告别', accept: '允许它存在',
+  reframe: '换一个视角', bloom: '让生命力流动', renew: '带着新的自己生活'
+};
+
+const DEPTH_LABELS = {
+  see: ['发生什么', '身体与情绪', '它想被听见', '收束'],
+  trace: ['最早的回声', '那个更小的你', '保护与代价', '收束'],
+  mourn: ['失去了什么', '让它难过', '与它告别', '收束'],
+  accept: ['还在打架', '先允许', '接纳与不放弃', '收束'],
+  reframe: ['旧故事', '事实与解释', '更完整的故事', '收束'],
+  bloom: ['生命力', '资源从哪来', '一颗种子', '收束'],
+  renew: ['新的开头', '带走与放下', '怎样对待自己', '收束']
+};
+const DEPTH_KICKERS = {
+  see: ['第一层 · 表面', '第二层 · 落在哪里', '第三层 · 需要', '收束 · 带走一句话'],
+  trace: ['第一层 · 回声', '第二层 · 那个孩子', '第三层 · 保护', '收束 · 来路卡'],
+  mourn: ['第一层 · 失去', '第二层 · 哀伤', '第三层 · 告别', '收束 · 告别句'],
+  accept: ['第一层 · 抗拒', '第二层 · 允许', '第三层 · 不放弃', '收束 · 允许句'],
+  reframe: ['第一层 · 旧故事', '第二层 · 事实', '第三层 · 新故事', '收束 · 新故事'],
+  bloom: ['第一层 · 光', '第二层 · 资源', '第三层 · 种子', '收束 · 小行动'],
+  renew: ['第一层 · 新开头', '第二层 · 取舍', '第三层 · 承诺', '收束 · 新叙事']
+};
+
+const SEE_EMOTIONS = ['委屈', '焦虑', '疲惫', '麻木', '愤怒', '悲伤', '孤独', '羞耻', '无力', '恐惧'];
+const SEE_BODY = ['胸口发紧', '喉咙堵着', '胃部沉重', '肩颈僵硬', '头部发胀', '呼吸很浅', '四肢无力', '眼眶发热', '身体发空', '说不清楚'];
+const NEEDS = ['被看见', '被理解', '被尊重', '被接纳', '安全感', '休息', '边界', '被爱', '掌控感', '陪伴'];
+const PROTECTIONS = ['懂事', '讨好', '隐藏需求', '提前察言观色', '独立', '不麻烦别人', '用成绩证明自己', '先发制人', '让自己变忙', '不再期待'];
+const LOSSES = ['被保护的感觉', '一句道歉或认可', '无忧的童年', '一个安全的家', '一段关系', '一个人的离开', '本可以的自己', '曾经的信任', '被偏爱的时光', '一个想象中的未来'];
+const MOURN_FEELS = ['悲伤', '愤怒', '遗憾', '思念', '不甘', '委屈', '空落落', '松了一口气'];
+const FAREWELLS = ['等他们改变的期待', '必须懂事才安全的角色', '一直没等到的那句话', '“如果当时……”的反复想', '对自己的苛责', '不再需要的硬撑'];
+const RESISTANCE = ['我不该这么脆弱', '我不该还在意', '我不该需要别人', '我不该失败', '我不该停下来', '我不该有情绪', '我不该麻烦别人'];
+const KINDNESS = ['我可以先不急着变好', '这份感受是有来由的', '我不需要为自己的需要道歉', '我可以对自己温柔一点'];
+const DISTORTIONS = ['以偏概全', '灾难化', '读心术', '非黑即白', '应该式', '个人化'];
+const STRENGTHS = ['共情力', '好奇心', '韧性', '创造力', '认真', '温柔', '幽默', '勇气', '观察力', '行动力'];
+const ANCHORS = ['晨间三分钟呼吸', '每周一次散步', '难过时联系朋友', '每天写一行情绪日记', '累了允许自己停', '回到栖心重读这一程'];
+
+const CASE_REFERENCE = {
+  title: '一个在工作中不敢向前的人',
+  name: '林岚（化名）',
+  meta: '34 岁 · 设计公司资深设计师 · 教学性案例',
+  intro: '她并不缺能力，却总在关键节点往后退：会议上不敢发言，机会来了先让给别人，事后又反复责怪自己。她说不清自己为什么这么怕“占位置”，只知道一开口，喉咙就会发紧。',
+  sections: [
+    {
+      label: '01 看见',
+      text: '部门评审会上，她准备了两周。轮到她时，她只说了一句“我没什么补充”，同事替她讲完了方案。回家后胃一直疼，肩颈僵硬。她感到委屈、无力，也有一种很深的羞耻：又一次，没有让自己被听见。\n\n她最需要的是：被看见、被尊重、安全感。她希望有人问她：“你是怎么想的？”也希望自己敢把话说完。'
+    },
+    {
+      label: '02 溯源',
+      text: '她想到 7 岁。父亲检查作业，她写错一道题，父亲把本子摔在桌上。她站在旁边，不敢哭，也不敢动。\n\n从那时起，她学会了先看父亲的脸色，把不会的题藏起来，尽量不添麻烦。她变得懂事、过度准备、不轻易表达需要。这些方式让她少挨了一些批评，也让她在工作里不敢向前。'
+    },
+    {
+      label: '03 哀悼',
+      text: '她失去的是一个可以放心犯错的家，和一句“这不是你的错”。她想对那时的父亲说：我真的很怕，我希望你抱抱我，而不是让我站到墙角。\n\n她愿意告别的，是“等父亲有一天承认他伤过我”的期待；她想留下的，是那时候没有放弃自己的自己，以及外婆给过她的温暖。'
+    },
+    {
+      label: '04 接纳',
+      text: '她抗拒自己的脆弱，也讨厌自己到现在还在意父亲怎么看她。但她也开始愿意对自己说：你当时只是一个想被保护的孩子。\n\n她承认自己确实受过伤，也确实有一段时间不敢发出声音；同时，她没有放弃“我仍然值得被尊重，也仍然可以慢慢练习表达”。'
+    },
+    {
+      label: '05 重构',
+      text: '旧故事是：“我一开口就会被否定，所以我不该开口。”\n\n事实是：评审会上同事打断了她的发言，但主管后来问她：“你刚才想说什么？”她的解释是“我一定很差，所有人都不想听我说”；另一种可能是：他们只是急着表达自己的观点，并不代表她的想法没有价值。\n\n她更愿意相信：我可以紧张，也可以慢慢把话说完。我的声音不需要完美，才值得被听见。'
+    },
+    {
+      label: '06 绽放',
+      text: '她认出了自己身上的认真、韧性和共情力。上周，她主动给新同事解释流程，对方认真地对她说谢谢；即使很怕，她也每次都把方案做完，还曾在小组讨论里提出过一个不同意见，最后被采纳。\n\n她为自己种下一颗种子：下一次会议，至少说出一个完整的句子，不先说“可能不对”。'
+    },
+    {
+      label: '07 新生',
+      text: '她曾以为，只有足够好、足够懂事，才不会给别人添麻烦。现在她愿意学习，在不完美里也给自己一个位置。\n\n她想带走对自己的耐心，和表达需要的能力；想慢慢放下“用完美换取安全”的旧办法。她愿意在责怪自己之前，先问一句：我现在需要什么？'
+    }
+  ],
+  note: '这是一个虚构的教学性案例，用来展示一条可能的心理线索，不是真实来访者，也不构成诊断。你可以只借用其中某一部分，不必照搬。'
+};
+
+function makeState() {
+  const now = Date.now();
+  return {
+    version: 2.1,
+    stage: 'see',
+    see: {
+      step: 0,
+      event: '',
+      emotions: [],
+      body: [],
+      intensity: 5,
+      felt: '',
+      needTags: [],
+      need: '',
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    trace: {
+      step: 0,
+      age: '',
+      earliest: '',
+      childState: '',
+      childNeedTags: [],
+      childNeed: '',
+      protections: [],
+      protection: '',
+      cost: '',
+      choice: '',
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    mourn: {
+      step: 0,
+      loss: '',
+      lossTags: [],
+      feelTags: [],
+      unsaid: '',
+      farewellTags: [],
+      farewell: '',
+      keep: '',
+      before: 5,
+      after: 5,
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    accept: {
+      step: 0,
+      resist: '',
+      resistanceTags: [],
+      allow: '',
+      kindnessTags: [],
+      truth: '',
+      notGiveUp: '',
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    reframe: {
+      step: 0,
+      thought: '',
+      distortions: [],
+      facts: '',
+      interpretation: '',
+      alternative: '',
+      newStory: '',
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    bloom: {
+      step: 0,
+      moments: '',
+      strengths: [],
+      evidence: '',
+      action: '',
+      support: '',
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    renew: {
+      step: 0,
+      narrative: '',
+      take: '',
+      leave: '',
+      commitment: '',
+      anchors: [],
+      summary: '',
+      done: false,
+      completed: [false, false, false, false],
+      reflection: '',
+      reflectionStep: -1,
+      reflectionError: '',
+      reflectionLoading: false,
+      updatedAt: now
+    },
+    thread: { see: '', trace: '', mourn: '', accept: '', reframe: '', bloom: '', renew: '' },
+    settings: { model: 'deepseek-chat', temperature: 0.8 },
+    meta: { createdAt: now, updatedAt: now, completedAt: null }
+  };
+}
+
+let state = makeState();
+let reflectionSeq = 0;
+let reflectionController = null;
+let saveTimer = null;
+let polishBusy = false;
+
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
+
+function esc(value) {
+  return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+function escAttr(value) { return esc(value).replace(/\n/g, '&#10;'); }
+function clone(obj) { return JSON.parse(JSON.stringify(obj)); }
+function compact(text, max = 110) {
+  const t = String(text || '').replace(/\s+/g, ' ').trim();
+  return t.length > max ? t.slice(0, max) + '…' : t;
+}
+function cleanEnd(text) {
+  return String(text || '')
+    .trim()
+    .replace(/^[“”"'「」]+|[“”"'「」]+$/g, '')
+    .replace(/[。！？；，、\s]+$/g, '')
+    .trim();
+}
+function formatDate(ts) {
+  const d = ts ? new Date(ts) : new Date();
+  return new Intl.DateTimeFormat('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }).format(d);
+}
+function todayISO() { return new Date().toISOString().slice(0, 10); }
+function getPath(obj, path) {
+  return path.split('.').reduce((acc, key) => (acc == null ? undefined : acc[key]), obj);
+}
+function setPath(obj, path, value) {
+  const parts = path.split('.');
+  let target = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!target[parts[i]] || typeof target[parts[i]] !== 'object') target[parts[i]] = {};
+    target = target[parts[i]];
+  }
+  target[parts[parts.length - 1]] = value;
+}
+function deepMerge(base, saved) {
+  if (Array.isArray(base)) return Array.isArray(saved) ? saved : base;
+  if (base && typeof base === 'object') {
+    const out = {};
+    Object.keys(base).forEach(key => {
+      out[key] = saved && Object.prototype.hasOwnProperty.call(saved, key)
+        ? deepMerge(base[key], saved[key])
+        : base[key];
+    });
+    if (saved && typeof saved === 'object') {
+      Object.keys(saved).forEach(key => { if (!(key in out)) out[key] = saved[key]; });
+    }
+    return out;
+  }
+  return saved === undefined ? base : saved;
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return makeState();
+    const saved = JSON.parse(raw);
+    const merged = deepMerge(makeState(), saved);
+    // 旧存档（尚无哀悼幕）：已走完溯源的，视为哀悼已过，避免卡在接纳之外
+    if (saved && !saved.mourn && saved.trace && saved.trace.done) {
+      merged.mourn.done = true;
+      merged.mourn.completed = [true, true, true, true];
+    }
+    return merged;
+  } catch (err) {
+    console.warn('读取本地记录失败', err);
+    return makeState();
+  }
+}
+function saveNow() {
+  state.meta.updatedAt = Date.now();
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (err) {
+    showToast('本地空间不足，暂时无法保存。请先导出数据。', 3800);
+    console.warn('保存失败', err);
+  }
+}
+function saveSoon() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveNow, 320);
+}
+
+function getApiKey() {
+  try {
+    return (sessionStorage.getItem(KEY_SESSION) || localStorage.getItem(KEY_LOCAL) || '').trim();
+  } catch (_) {
+    return '';
+  }
+}
+function hasApiKey() { return Boolean(getApiKey()); }
+function storeApiKey(key, remember) {
+  const clean = String(key || '').trim();
+  if (!clean) {
+    sessionStorage.removeItem(KEY_SESSION);
+    localStorage.removeItem(KEY_LOCAL);
+    return;
+  }
+  if (remember) {
+    localStorage.setItem(KEY_LOCAL, clean);
+    sessionStorage.removeItem(KEY_SESSION);
+  } else {
+    sessionStorage.setItem(KEY_SESSION, clean);
+    localStorage.removeItem(KEY_LOCAL);
+  }
+}
+function clearStoredApiKeys() {
+  try {
+    sessionStorage.removeItem(KEY_SESSION);
+    localStorage.removeItem(KEY_LOCAL);
+    LEGACY_KEY_NAMES.forEach(name => {
+      sessionStorage.removeItem(name);
+      localStorage.removeItem(name);
+    });
+  } catch (_) { /* storage may be unavailable */ }
+}
+function endpointFrom() {
+  // Public release: keep the endpoint fixed so a user's key can never be
+  // redirected to a third-party gateway through this UI.
+  return API_ENDPOINT;
+}
+
+function stageData(stage = state.stage) { return state[stage]; }
+function isStageAvailable(id) {
+  const index = STAGE_ORDER.indexOf(id);
+  if (index <= 0) return index === 0;
+  const previous = STAGE_ORDER[index - 1];
+  return Boolean(state[previous] && state[previous].done);
+}
+
+/* ---------------- date / greeting ---------------- */
+function renderDate() {
+  const now = new Date();
+  $('#todayLabel').textContent = new Intl.DateTimeFormat('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' }).format(now);
+  const h = now.getHours();
+  let greeting = '慢一点，也没关系';
+  if (h >= 5 && h < 10) greeting = '早安，先照顾自己';
+  else if (h >= 10 && h < 14) greeting = '中午了，松一松肩膀';
+  else if (h >= 14 && h < 18) greeting = '下午好，给自己留点空白';
+  else if (h >= 18 && h < 23) greeting = '夜色里，把脚步放慢';
+  else greeting = '夜很深了，先安顿自己';
+  $('#greeting').textContent = greeting;
+}
+
+/* ---------------- nav & thread ---------------- */
+function renderNav() {
+  const nav = $('#journeyNav');
+  nav.innerHTML = STAGE_ORDER.map(id => {
+    const item = STAGE_META[id];
+    const isActive = state.stage === id;
+    const done = Boolean(state[id] && state[id].done);
+    const available = isStageAvailable(id);
+    const locked = !available;
+    return `
+      <button class="stage-link ${isActive ? 'active' : ''} ${done ? 'done' : ''} ${locked ? 'locked' : ''}" type="button"
+        data-stage="${id}" ${locked ? 'data-locked="true" aria-disabled="true"' : ''} aria-current="${isActive ? 'step' : 'false'}">
+        <span class="stage-num">${item.num}</span>
+        <span class="stage-copy"><b>${esc(item.label)}</b><small>${locked ? '先完成上一幕' : `${esc(item.en)} · ${esc(STAGE_SHORT[id])}`}</small></span>
+        <span class="stage-state" aria-hidden="true">
+          ${available ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="m5 12 4.2 4.2L19 6.6"/></svg>' : '待'}
+        </span>
+      </button>`;
+  }).join('');
+  if (window.innerWidth <= 860) {
+    requestAnimationFrame(() => {
+      const active = $('#journeyNav .stage-link.active');
+      if (active) active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    });
+  }
+}
+
+function threadBody(value, label) {
+  return String(value || '').replace(new RegExp('^' + label + '：\\s*'), '').trim();
+}
+function threadDisplay(id, value) {
+  return id === 'see' ? threadBody(value, '我看见') : String(value || '');
+}
+function renderThread() {
+  const preview = $('#threadPreview');
+  const previousId = PREV_STAGE[state.stage];
+  const previewId = state.thread[state.stage]
+    ? state.stage
+    : (previousId && state.thread[previousId] ? previousId : [...STAGE_ORDER].reverse().find(id => state.thread[id]));
+  if (previewId) {
+    preview.textContent = compact(threadDisplay(previewId, state.thread[previewId]), 78);
+    preview.classList.remove('empty');
+  } else {
+    preview.textContent = '尚未形成';
+    preview.classList.add('empty');
+  }
+
+  const setThreadValue = (id, value, fallback) => {
+    const el = $(id);
+    if (!el) return;
+    el.textContent = value || fallback;
+    el.classList.toggle('empty', !value);
+  };
+  setThreadValue('#sideSee', threadBody(state.thread.see, '我看见'), '尚未形成');
+  setThreadValue('#sideTrace', state.thread.trace, '尚未形成');
+  setThreadValue('#sideMourn', compact(state.thread.mourn, 64), '尚未形成');
+  const choice = state.thread.renew || state.thread.reframe || state.thread.accept || '';
+  setThreadValue('#sideChoice', choice, '尚未形成');
+
+  const panel = $('#threadPanel');
+  if (panel) {
+    panel.innerHTML = STAGE_ORDER.map(id => {
+      const value = state.thread[id];
+      const body = value ? threadDisplay(id, value) : '尚未形成';
+      return `<dl class="thread-panel-row">
+        <dt>${esc(STAGE_META[id].label)}</dt>
+        <dd class="${value ? '' : 'empty'}">${esc(body)}</dd>
+      </dl>`;
+    }).join('');
+  }
+}
+
+function toggleThreadPanel(force) {
+  const panel = $('#threadPanel');
+  const toggle = $('#threadToggle');
+  if (!panel || !toggle) return;
+  const shouldOpen = typeof force === 'boolean' ? force : panel.hidden;
+  panel.hidden = !shouldOpen;
+  toggle.textContent = shouldOpen ? '收起' : '展开';
+}
+
+/* ---------------- depth rail ---------------- */
+function renderDepthRail(stage, step, completed) {
+  const labels = DEPTH_LABELS[stage];
+  return `
+    <div class="depth-rail" aria-label="这一幕的深度">
+      ${labels.map((label, index) => {
+        const active = index === step;
+        const done = Boolean(completed[index]) && !active;
+        const future = index > step && !completed[index];
+        return `<button class="depth-item ${active ? 'active' : ''} ${done ? 'done' : ''} ${future ? 'future' : ''}" type="button"
+          ${done || active ? `data-depth="${index}"` : 'disabled'}
+          aria-current="${active ? 'step' : 'false'}">
+          <span class="depth-dot"><span>${String(index + 1).padStart(2, '0')}</span></span>
+          <span class="depth-label">${esc(label)}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+}
+
+function stageHeader(stage) {
+  const meta = STAGE_META[stage];
+  return `
+    <div class="stage-head">
+      <div class="stage-eyebrow">${esc(meta.eyebrow)}</div>
+      <h1>${esc(meta.title)}</h1>
+      <p>${esc(meta.lead)}<span>${esc(meta.sub)}</span></p>
+      <div class="stage-scope"><span>${esc(meta.scope)}</span><button class="case-link" type="button" data-action="open-case">案例参考</button></div>
+    </div>`;
+}
+
+function carryBand(stage = state.stage) {
+  const previous = PREV_STAGE[stage];
+  if (!previous || !state.thread[previous]) return '';
+  const previousLabel = STAGE_META[previous].label;
+  return `
+    <div class="carry-band">
+      <div class="carry-kicker">从${esc(previousLabel)}带来</div>
+      <blockquote class="carry-quote">${esc(state.thread[previous])}</blockquote>
+      <button class="carry-back" type="button" data-action="back-stage" data-stage="${previous}">回到${esc(previousLabel)}修改</button>
+    </div>`;
+}
+
+function stageBottomNav(stage, step) {
+  const prev = step > 0 ? `<button class="secondary-btn" type="button" data-action="prev-step">回到上一层</button>` : '';
+  return `
+    <div class="stage-nav">
+      <div class="left">${prev}<span class="stage-nav-hint">每一步都会自动保存。</span></div>
+      <button class="text-btn" type="button" data-action="open-thread">查看本次主线</button>
+    </div>`;
+}
+
+/* ---------------- summary builders ---------------- */
+function needText(s) {
+  const text = String(s.need || '').trim();
+  const tags = (s.needTags || []).join('、');
+  return text || tags || '被看见';
+}
+function needPhrase(s) {
+  const tags = (s.needTags || []).join('、');
+  if (tags) return tags;
+  const text = cleanEnd(s.need);
+  if (!text) return '被看见';
+  return text.length <= 14 ? text : `你写下的那句「${compact(text, 26)}」`;
+}
+function protectionText(s) {
+  const text = String(s.protection || '').trim();
+  const tags = (s.protections || []).join('、');
+  return text || tags || '用那时的方式保护自己';
+}
+function buildSeeSummary() {
+  const s = state.see;
+  const event = cleanEnd(s.event);
+  if (!event) return '';
+  const emotions = s.emotions.length ? s.emotions.join('、') : '一种说不清的感受';
+  const bodyRaw = s.body.join('、');
+  const body = bodyRaw && !bodyRaw.startsWith('说不清') ? `；身体${bodyRaw}` : '';
+  const needTags = s.needTags.join('、');
+  const needTextValue = cleanEnd(s.need);
+  let needLine = '';
+  if (needTags && needTextValue) needLine = `我最需要的是${needTags}。它想说的是：${needTextValue}`;
+  else if (needTags) needLine = `我最需要的是${needTags}。`;
+  else if (needTextValue) {
+    needLine = needTextValue.length <= 14 ? `我最需要的是${needTextValue}。` : `它想说的是：${needTextValue}`;
+  }
+  const ending = needLine && !/[。！？]$/.test(needLine) ? '。' : '';
+  return `我看见：${event}。那一刻，我感到${emotions}${body}。${needLine}${ending}`.trim();
+}
+function buildTraceSummary() {
+  const s = state.trace;
+  const lines = [];
+  if (cleanEnd(s.earliest)) lines.push(`它可能来自：${cleanEnd(s.age) ? cleanEnd(s.age) + '，' : ''}${cleanEnd(s.earliest)}`);
+  if (cleanEnd(s.childNeed) || s.childNeedTags.length) lines.push(`那时的我需要：${cleanEnd(s.childNeed) || s.childNeedTags.join('、')}`);
+  if (cleanEnd(s.protection) || s.protections.length) lines.push(`它曾经保护我：${cleanEnd(s.protection) || s.protections.join('、')}`);
+  lines.push(`现在我可以：${cleanEnd(s.choice)}`);
+  return lines.join('\n');
+}
+function buildMournSummary() {
+  const s = state.mourn;
+  const loss = cleanEnd(s.loss) || s.lossTags.join('、');
+  const farewell = cleanEnd(s.farewell) || s.farewellTags.join('、');
+  const keep = cleanEnd(s.keep);
+  if (!loss && !farewell && !keep) return '';
+  const lines = [];
+  if (loss) lines.push(`我为「${loss}」难过。`);
+  if (s.feelTags.length) lines.push(`那里有${s.feelTags.join("、")}，都可以在这里。`);
+  if (farewell) lines.push(`我告别：${farewell}。`);
+  if (keep) lines.push(`我带走：${keep}。`);
+  return lines.join('\n');
+}
+function buildAcceptSummary() {
+  const s = state.accept;
+  const allow = cleanEnd(s.allow) || s.kindnessTags.join('、');
+  const truth = cleanEnd(s.truth);
+  const notGiveUp = cleanEnd(s.notGiveUp);
+  if (!allow && !truth && !notGiveUp) return '';
+  const lines = [];
+  if (allow) lines.push(`我愿意先允许：${allow}。`);
+  if (truth) lines.push(`我承认：${truth}。`);
+  if (notGiveUp) lines.push(`但我仍然：${notGiveUp}。`);
+  return lines.join('\n');
+}
+function buildReframeSummary() {
+  const s = state.reframe;
+  const thought = cleanEnd(s.thought);
+  const facts = cleanEnd(s.facts);
+  const newStory = cleanEnd(s.newStory) || cleanEnd(s.alternative);
+  if (!thought && !newStory) return '';
+  const lines = [];
+  if (thought) lines.push(`旧故事：${thought}。`);
+  if (facts) lines.push(`事实是：${facts}。`);
+  if (newStory) lines.push(`我更愿意相信：${newStory}。`);
+  return lines.join('\n');
+}
+function buildBloomSummary() {
+  const s = state.bloom;
+  const strengths = s.strengths.length ? s.strengths.join('、') : '一些还没有被命名的力量';
+  const evidence = cleanEnd(s.evidence) || cleanEnd(s.moments);
+  const action = cleanEnd(s.action);
+  if (!s.strengths.length && !s.moments.trim() && !action) return '';
+  const lines = [`我看见自己拥有：${strengths}。`];
+  if (evidence) lines.push(`它们曾帮助我：${evidence}。`);
+  if (cleanEnd(s.support)) lines.push(`可以陪我继续的是：${cleanEnd(s.support)}。`);
+  if (action) lines.push(`今天，我愿意为自己：${action}。`);
+  return lines.join('\n');
+}
+function buildRenewSummary() {
+  const s = state.renew;
+  const narrative = cleanEnd(s.narrative);
+  if (!narrative) return '';
+  const lines = [`${narrative}。`];
+  if (cleanEnd(s.take)) lines.push(`我想带走：${cleanEnd(s.take)}。`);
+  if (cleanEnd(s.leave)) lines.push(`我想放下：${cleanEnd(s.leave)}。`);
+  if (cleanEnd(s.commitment)) lines.push(`从今以后，我愿意：${cleanEnd(s.commitment)}。`);
+  if (s.anchors.length) lines.push(`我会记得：${s.anchors.join('、')}。`);
+  return lines.join('\n');
+}
+function ensureSummary(stage) {
+  const d = stageData(stage);
+  if (d.summary && d.summary.trim()) return;
+  const builders = {
+    see: buildSeeSummary,
+    trace: buildTraceSummary,
+    mourn: buildMournSummary,
+    accept: buildAcceptSummary,
+    reframe: buildReframeSummary,
+    bloom: buildBloomSummary,
+    renew: buildRenewSummary
+  };
+  d.summary = (builders[stage] || buildSeeSummary)();
+}
+
+/* ---------------- step content ---------------- */
+function chipButtons(items, selected, group, cls = '') {
+  return items.map(item => `
+    <button type="button" class="chip ${cls} ${selected.includes(item) ? 'selected' : ''}"
+      data-chip="${escAttr(group)}" data-value="${escAttr(item)}">${esc(item)}</button>
+  `).join('');
+}
+
+function actionMarkup(stage, step) {
+  if (step < 3) {
+    return `
+      <div class="step-actions">
+        <button class="primary-btn" type="button" data-action="save-step">保存这一层
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+        </button>
+        <span class="mini-note">写不下去时，留空的部分也可以先放下。</span>
+      </div>`;
+  }
+  const labels = {
+    see: ['确认，带着这句话去溯源', '下一幕会从这句话开始，而不是从空白开始。'],
+    trace: ['确认这条来路，去哀悼', '它不是判决书，只是一张地图。'],
+    mourn: ['确认这句告别，去接纳', '告别不是遗忘，是让它不再压在心口。'],
+    accept: ['确认这份允许，去重构', '接纳不是终点，是停止和自己打架。'],
+    reframe: ['确认新的故事，去绽放', '它不需要完美，只需要比旧故事更完整一点。'],
+    bloom: ['种下这颗种子，去新生', '行动不必大，持续也不必完美。'],
+    renew: ['完成七幕，收拢新的叙事', '走到这里，你已经为自己留下了一条可以继续走的路。']
+  };
+  const copy = labels[stage] || labels.see;
+  return `
+    <div class="step-actions">
+      <button class="primary-btn" type="button" data-action="finish">${esc(copy[0])}
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+      </button>
+      <span class="mini-note">${esc(copy[1])}</span>
+    </div>`;
+}
+
+function seeStep0() {
+  const d = state.see;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.see[0]}</div>
+      <h2>最近一次，让你心里一沉的时刻，<br><em>发生了什么？</em></h2>
+      <p class="step-desc">只写一个具体画面：当时你在哪里，谁在场，发生了什么。不用写前因后果，也不用写得“客观”。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="seeEvent">把镜头拉近一点</label>
+          <textarea id="seeEvent" data-bind="see.event" placeholder="例：部门评审会上，我准备了两周。轮到我时，我只说了一句“我没什么补充”。同事替我讲完了方案。回家后，胃一直疼。">${esc(d.event)}</textarea>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"/><path d="M12 8v4M12 15h.01"/></svg>
+          <span>如果一时想不起来，可以先写“最近让我不舒服的一件小事”。不需要是最严重的那件。</span>
+        </div>
+      </div>
+      ${actionMarkup('see', 0)}
+    </div>`;
+}
+
+function seeStep1() {
+  const d = state.see;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.see[1]}</div>
+      <h2>那一刻，<em>它落在你身体的哪里？</em></h2>
+      <p class="step-desc">情绪不是需要被立刻修正的错误。先看看它在你身上留下了什么痕迹。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">如果用一个词命名，它更接近</p>
+          <div class="chips">${chipButtons(SEE_EMOTIONS, d.emotions, 'see.emotions', 'clay')}</div>
+        </div>
+        <div class="chip-group">
+          <p class="chip-title">身体哪里最先有反应</p>
+          <div class="chips">${chipButtons(SEE_BODY, d.body, 'see.body')}</div>
+        </div>
+        <div class="intensity">
+          <span class="intensity-label">强度</span>
+          <input type="range" min="0" max="10" step="1" value="${Number(d.intensity) || 0}" data-range="see.intensity" aria-label="情绪强度" style="--val:${(Number(d.intensity) || 0) * 10}%">
+          <span class="intensity-value" id="intensityValue">${Number(d.intensity) || 0}</span>
+        </div>
+        <div class="range-ends"><span>若有若无</span><span>快要把我淹没</span></div>
+        <div class="field" style="margin-top:17px">
+          <label class="field-label" for="seeFelt">其中最难受的部分，是什么？ <span class="optional">可以留空</span></label>
+          <textarea id="seeFelt" data-bind="see.felt" placeholder="例：不是方案被讲完，是我又一次确认：我的声音不重要。">${esc(d.felt)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('see', 1)}
+    </div>`;
+}
+
+function seeStep2() {
+  const d = state.see;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.see[2]}</div>
+      <h2>如果这份感受能说话，<br><em>它最想让你知道什么？</em></h2>
+      <p class="step-desc">不是分析，也不是解决办法。只是让它把话说完。它可能需要的是某样很具体的东西。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">它需要的是</p>
+          <div class="chips">${chipButtons(NEEDS, d.needTags, 'see.needTags')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="seeNeed">如果它有一句话想对你说</label>
+          <textarea id="seeNeed" data-bind="see.need" placeholder="例：我希望有人问我“你是怎么想的”，也希望自己敢把话说完。">${esc(d.need)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('see', 2)}
+    </div>`;
+}
+
+function seeStep3() {
+  ensureSummary('see');
+  const d = state.see;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.see[3]}</div>
+      <h2>把这一切，收拢成<em>一句你带走的话。</em></h2>
+      <p class="step-desc">不需要概括全部，也不需要写得漂亮。只要它足够诚实，能让你在下一幕认出自己。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你带走的一句话</span><span>会进入下一幕</span></div>
+          <textarea id="seeSummary" data-bind="see.summary" aria-label="看见的收束句">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这句话' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">润色只会调整语气，不会替你添加事实。</span>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M4 7h16M4 12h10M4 17h7"/></svg>
+          <span>确认后，这句话会固定在页面顶部，也会成为溯源第一层的起点。你随时可以回到这里修改。</span>
+        </div>
+      </div>
+      ${actionMarkup('see', 3)}
+    </div>`;
+}
+
+function traceStep0() {
+  const d = state.trace;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.trace[0]}</div>
+      <h2>带着这句话，<br><em>你想到更早的什么时候？</em></h2>
+      <p class="step-desc">不必是“第一次”，也不必是最严重的一次。想到哪个画面，就从哪个画面开始。</p>
+      <div class="step-fields">
+        <div class="form-row">
+          <div class="field">
+            <label class="field-label" for="traceAge">大约是</label>
+            <input id="traceAge" type="text" data-bind="trace.age" value="${escAttr(d.age)}" placeholder="例：7 岁 / 小学一年级">
+          </div>
+          <div class="field">
+            <label class="field-label" for="traceEarliest">那个画面里，发生了什么</label>
+            <textarea id="traceEarliest" data-bind="trace.earliest" placeholder="例：父亲检查作业，我写错一道题，他把本子摔在桌上。我站在旁边，不敢哭，也不敢动。">${esc(d.earliest)}</textarea>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg>
+          <span>如果什么都想不起来，可以写“说不清”。有时，模糊本身就是一种保护。</span>
+        </div>
+      </div>
+      ${actionMarkup('trace', 0)}
+    </div>`;
+}
+
+function traceStep1() {
+  const d = state.trace;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.trace[1]}</div>
+      <h2>那个更小的你，<em>当时在做什么？</em></h2>
+      <p class="step-desc">先不急着心疼，也不急着责怪任何人。只是看看：那个孩子如何度过了那一刻。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="traceChildState">TA 当时在做什么，或者学会了什么？</label>
+          <textarea id="traceChildState" data-bind="trace.childState" placeholder="例：我学会了先看父亲的脸色，把不会的题藏起来，尽量不让他发现。">${esc(d.childState)}</textarea>
+        </div>
+        <div class="chip-group">
+          <p class="chip-title">TA 最需要听到什么</p>
+          <div class="chips">${chipButtons(NEEDS, d.childNeedTags, 'trace.childNeedTags')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="traceChildNeed">如果可以对 TA 说一句话</label>
+          <textarea id="traceChildNeed" data-bind="trace.childNeed" placeholder="例：写错一道题没关系。你可以害怕，也可以哭。">${esc(d.childNeed)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('trace', 1)}
+    </div>`;
+}
+
+function traceStep2() {
+  const d = state.trace;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.trace[2]}</div>
+      <h2>那个方式，曾经保护了你什么？<br><em>又让你付出了什么？</em></h2>
+      <p class="step-desc">看见保护，不等于替它辩护；看见代价，也不等于责怪当时的自己。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">你曾经用哪些方式撑过来</p>
+          <div class="chips">${chipButtons(PROTECTIONS, d.protections, 'trace.protections', 'clay')}</div>
+        </div>
+        <div class="two-col" style="margin-top:15px">
+          <div class="field">
+            <label class="field-label" for="traceProtection">它曾经保护我</label>
+            <textarea id="traceProtection" data-bind="trace.protection" placeholder="例：提前察言观色、过度准备、不麻烦别人，让我少挨一些批评。">${esc(d.protection)}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="traceCost">它也让我付出了</label>
+            <textarea id="traceCost" data-bind="trace.cost" placeholder="例：我不敢在会议上发言，也不敢争取机会；总觉得一开口就会证明自己不够好。">${esc(d.cost)}</textarea>
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('trace', 2)}
+    </div>`;
+}
+
+function traceStep3() {
+  ensureSummary('trace');
+  const d = state.trace;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.trace[3]}</div>
+      <h2>把这条来路，<em>收拢成一张地图。</em></h2>
+      <p class="step-desc">它不解释全部的你，只标出你走过的一段路。你可以在下面直接修改，最后一行「现在我可以」也可以慢慢补上。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的来路卡</span><span>会存在于本次主线</span></div>
+          <textarea id="traceSummary" data-bind="trace.summary" aria-label="溯源的来路卡" style="min-height:150px">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心梳理这段文字' : '连接 DeepSeek 后可梳理'}</button>
+            <span class="summary-hint">保留四行结构，不替你添加新的经历。</span>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+          <span>到这里，来路卡已经形成。下一幕会从这条来路出发，练习接纳。</span>
+        </div>
+      </div>
+      ${actionMarkup('trace', 3)}
+    </div>`;
+}
+
+function mournStep0() {
+  const d = state.mourn;
+  const hint = state.trace.cost ? `<div class="soft-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"/></svg><span>你在溯源里写到，它让你付出了「${esc(compact(state.trace.cost, 40))}」。这里不需要再解释，只看看：那时，你失去了什么？</span></div>` : '';
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.mourn[0]}</div>
+      <h2>那时候，你<em>失去了什么？</em></h2>
+      <p class="step-desc">可以是一个人、一段关系，也可以是一种本该有的感觉：被保护、被道歉、被偏爱，或者一个本可以的自己。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">如果有一个靠近的，可以先点一下</p>
+          <div class="chips">${chipButtons(LOSSES, d.lossTags, 'mourn.lossTags', 'clay')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="mournLoss">那时我没有得到的、或失去的是</label>
+          <textarea id="mournLoss" data-bind="mourn.loss" placeholder="例：一个可以放心犯错的家。一句“这不是你的错”。">${esc(d.loss)}</textarea>
+        </div>
+        <div class="intensity">
+          <span class="intensity-label">此刻的重量</span>
+          <input type="range" min="0" max="10" step="1" value="${Number(d.before) || 0}" data-range="mourn.before" aria-label="此刻的重量" style="--val:${(Number(d.before) || 0) * 10}%">
+          <span class="intensity-value" id="intensityValue">${Number(d.before) || 0}</span>
+        </div>
+        ${hint}
+        <div class="soft-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 12h14"/></svg><span>这一幕会碰到一些重的东西。随时可以停下，今天写到哪里都算数；觉得太难受时，点右上角的支持按钮。</span></div>
+      </div>
+      ${actionMarkup('mourn', 0)}
+    </div>`;
+}
+
+function mournStep1() {
+  const d = state.mourn;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.mourn[1]}</div>
+      <h2>让这份失去，<em>可以难过。</em></h2>
+      <p class="step-desc">不需要原谅，不需要释怀，也不需要马上好起来。难过本身，就是这一层的完成。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">此刻它带着什么感受</p>
+          <div class="chips">${chipButtons(MOURN_FEELS, d.feelTags, 'mourn.feelTags')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="mournUnsaid">我一直没来得及说的是（可以对那个人，也可以对那时的自己）</label>
+          <textarea id="mournUnsaid" data-bind="mourn.unsaid" placeholder="例：我那时真的很怕。我希望你抱抱我，而不是让我站到墙角。">${esc(d.unsaid)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('mourn', 1)}
+    </div>`;
+}
+
+function mournStep2() {
+  const d = state.mourn;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.mourn[2]}</div>
+      <h2>你愿意<em>告别什么？</em></h2>
+      <p class="step-desc">告别不是遗忘，也不是否认它发生过。只是把不再需要一直背着的，轻轻放下；把值得留下的，带在身边。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">可以先借一个</p>
+          <div class="chips">${chipButtons(FAREWELLS, d.farewellTags, 'mourn.farewellTags', 'clay')}</div>
+        </div>
+        <div class="two-col" style="margin-top:14px">
+          <div class="field">
+            <label class="field-label" for="mournFarewell">我愿意告别的是</label>
+            <textarea id="mournFarewell" data-bind="mourn.farewell" placeholder="例：等父亲有一天承认他伤过我的期待。">${esc(d.farewell)}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="mournKeep">我想留下、带走的是</label>
+            <textarea id="mournKeep" data-bind="mourn.keep" placeholder="例：那时候我没有放弃自己。外婆曾经给过我的温暖。">${esc(d.keep)}</textarea>
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('mourn', 2)}
+    </div>`;
+}
+
+function mournStep3() {
+  ensureSummary('mourn');
+  const d = state.mourn;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.mourn[3]}</div>
+      <h2>把这一份告别，<em>收拢成一句话。</em></h2>
+      <p class="step-desc">这句话不是要你放下，而是承认：失去是真的，难过是真的，你也可以带着它继续往前。你可以直接修改。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的告别句</span><span>会进入接纳</span></div>
+          <textarea id="mournSummary" data-bind="mourn.summary" aria-label="哀悼的告别句">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这句话' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">不用写得释然，诚实就够了。</span>
+          </div>
+        </div>
+        <div class="intensity">
+          <span class="intensity-label">现在的重量</span>
+          <input type="range" min="0" max="10" step="1" value="${Number(d.after) || 0}" data-range="mourn.after" aria-label="现在的重量" style="--val:${(Number(d.after) || 0) * 10}%">
+          <span class="intensity-value" id="intensityValue">${Number(d.after) || 0}</span>
+        </div>
+        <div class="soft-note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg><span>如果现在比刚才更沉，可以先停在这里，喝口水、走一走，下次再继续。这些内容也值得带给你信任的人或专业咨询师。</span></div>
+      </div>
+      ${actionMarkup('mourn', 3)}
+    </div>`;
+}
+
+function acceptStep0() {
+  const d = state.accept;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.accept[0]}</div>
+      <h2>你还在和哪一部分的自己，<em>打架？</em></h2>
+      <p class="step-desc">不是要你马上喜欢它。只是先认出：你正在推开什么，又用什么话责备自己。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">我常常对自己说</p>
+          <div class="chips">${chipButtons(RESISTANCE, d.resistanceTags, 'accept.resistanceTags', 'clay')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="acceptResist">如果诚实一点，我最想赶走的是</label>
+          <textarea id="acceptResist" data-bind="accept.resist" placeholder="例：我不允许自己这么脆弱。我讨厌自己到现在还在意父亲怎么看我。">${esc(d.resist)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('accept', 0)}
+    </div>`;
+}
+
+function acceptStep1() {
+  const d = state.accept;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.accept[1]}</div>
+      <h2>如果先不赶走它，<br><em>你可以对自己说什么？</em></h2>
+      <p class="step-desc">允许不等于同意。它只是停止把“正在难受”变成“我不该难受”的第二层伤害。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">可以先借一句话给自己</p>
+          <div class="chips">${chipButtons(KINDNESS, d.kindnessTags, 'accept.kindnessTags')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="acceptAllow">如果把手放在心口，我想对现在的自己说</label>
+          <textarea id="acceptAllow" data-bind="accept.allow" placeholder="例：我看见你了。你当时只是一个想被保护的孩子。你可以先在这里待一会儿。">${esc(d.allow)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('accept', 1)}
+    </div>`;
+}
+
+function acceptStep2() {
+  const d = state.accept;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.accept[2]}</div>
+      <h2>接纳不是认命。<br><em>你愿意承认什么，又不放弃什么？</em></h2>
+      <p class="step-desc">承认发生过的，不等于同意它应该发生。你可以同时保有事实，和自己的方向。</p>
+      <div class="step-fields">
+        <div class="two-col">
+          <div class="field">
+            <label class="field-label" for="acceptTruth">我承认</label>
+            <textarea id="acceptTruth" data-bind="accept.truth" placeholder="例：我确实受过伤，也确实有一段时间不敢发出自己的声音。">${esc(d.truth)}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="acceptNotGiveUp">但我仍然不放弃</label>
+            <textarea id="acceptNotGiveUp" data-bind="accept.notGiveUp" placeholder="例：我仍然值得被尊重，也仍然可以慢慢练习表达。">${esc(d.notGiveUp)}</textarea>
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('accept', 2)}
+    </div>`;
+}
+
+function acceptStep3() {
+  ensureSummary('accept');
+  const d = state.accept;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.accept[3]}</div>
+      <h2>把这一份允许，<em>收拢成一句话。</em></h2>
+      <p class="step-desc">这句话不是给自己找借口，而是让你停止在伤口上再责备自己。你可以直接修改。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的允许句</span><span>会进入重构</span></div>
+          <textarea id="acceptSummary" data-bind="accept.summary" aria-label="接纳的允许句">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这句话' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">它只需要足够诚实，不需要足够积极。</span>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+          <span>确认后，这句话会成为下一幕“重构”的起点。</span>
+        </div>
+      </div>
+      ${actionMarkup('accept', 3)}
+    </div>`;
+}
+
+function reframeStep0() {
+  const d = state.reframe;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.reframe[0]}</div>
+      <h2>卡住你的，<br><em>是哪一句话？</em></h2>
+      <p class="step-desc">原样写下它，不用修饰。然后看看：它更像哪一种思维惯性。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="reframeThought">最近反复出现在你脑海里的那句话</label>
+          <textarea id="reframeThought" data-bind="reframe.thought" placeholder="例：我一开口就会被否定，所以我不该开口。">${esc(d.thought)}</textarea>
+        </div>
+        <div class="chip-group">
+          <p class="chip-title">它有点像</p>
+          <div class="chips">${chipButtons(DISTORTIONS, d.distortions, 'reframe.distortions', 'clay')}</div>
+        </div>
+      </div>
+      ${actionMarkup('reframe', 0)}
+    </div>`;
+}
+
+function reframeStep1() {
+  const d = state.reframe;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.reframe[1]}</div>
+      <h2>哪些是事实，<br><em>哪些是你讲给自己的解释？</em></h2>
+      <p class="step-desc">事实是摄像头能拍到的部分；解释，是我们赋予它的意义。把它们放在两张桌子上。</p>
+      <div class="step-fields">
+        <div class="two-col">
+          <div class="field">
+            <label class="field-label" for="reframeFacts">事实是</label>
+            <textarea id="reframeFacts" data-bind="reframe.facts" placeholder="例：评审会上，同事打断了我的话；但主管后来问我：“你刚才想说什么？”">${esc(d.facts)}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="reframeInterpretation">我当时的解释是</label>
+            <textarea id="reframeInterpretation" data-bind="reframe.interpretation" placeholder="例：我一定很差，所有人都不想听我说。">${esc(d.interpretation)}</textarea>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"/><path d="M12 8v4M12 15h.01"/></svg>
+          <span>两者都写下来，不是为了否定你的感受，而是把“全部”拆成可以看见的部分。</span>
+        </div>
+      </div>
+      ${actionMarkup('reframe', 1)}
+    </div>`;
+}
+
+function reframeStep2() {
+  const d = state.reframe;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.reframe[2]}</div>
+      <h2>还有没有更完整、<br><em>更有弹性的说法？</em></h2>
+      <p class="step-desc">不是强行积极，而是给原来的故事多一个位置。先写可能的解释，再写你愿意相信的那一句。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="reframeAlternative">还有其他可能</label>
+          <textarea id="reframeAlternative" data-bind="reframe.alternative" placeholder="例：也许他们只是急着表达自己的观点，并不代表我的想法没有价值。">${esc(d.alternative)}</textarea>
+        </div>
+        <div class="field">
+          <label class="field-label" for="reframeNewStory">我更愿意相信</label>
+          <textarea id="reframeNewStory" data-bind="reframe.newStory" placeholder="例：我可以紧张，也可以慢慢把话说完。我的声音不需要完美，才值得被听见。">${esc(d.newStory)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('reframe', 2)}
+    </div>`;
+}
+
+function reframeStep3() {
+  ensureSummary('reframe');
+  const d = state.reframe;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.reframe[3]}</div>
+      <h2>把新的故事，<em>放到旧故事旁边。</em></h2>
+      <p class="step-desc">它不是用来掩盖过去的，而是让你多一个可以站的位置。你可以修改每一行。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的新故事</span><span>会进入绽放</span></div>
+          <textarea id="reframeSummary" data-bind="reframe.summary" aria-label="重构的新故事" style="min-height:135px">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这段文字' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">保留事实，不添加新的经历。</span>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M5 12h14M12 5v14"/></svg>
+          <span>新故事不需要你立刻完全相信。它先存在，慢慢长出重量。</span>
+        </div>
+      </div>
+      ${actionMarkup('reframe', 3)}
+    </div>`;
+}
+
+function bloomStep0() {
+  const d = state.bloom;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.bloom[0]}</div>
+      <h2>你身上，<em>有哪些光？</em></h2>
+      <p class="step-desc">不一定是了不起的成就。也可以是你在很难的时候，仍然保留的东西。</p>
+      <div class="step-fields">
+        <div class="chip-group">
+          <p class="chip-title">我认得的自己</p>
+          <div class="chips">${chipButtons(STRENGTHS, d.strengths, 'bloom.strengths')}</div>
+        </div>
+        <div class="field" style="margin-top:14px">
+          <label class="field-label" for="bloomMoments">最近有没有一个瞬间，你感到自己是有生命力的？</label>
+          <textarea id="bloomMoments" data-bind="bloom.moments" placeholder="例：上周我主动给新同事解释了流程，她后来认真地对我说谢谢。">${esc(d.moments)}</textarea>
+        </div>
+      </div>
+      ${actionMarkup('bloom', 0)}
+    </div>`;
+}
+
+function bloomStep1() {
+  const d = state.bloom;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.bloom[1]}</div>
+      <h2>这些资源，<em>曾经怎样帮过你？</em></h2>
+      <p class="step-desc">把“我有韧性”变成一件具体发生过的事。具体，才会让你在需要时真的想起来。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="bloomEvidence">举一个具体的例子</label>
+          <textarea id="bloomEvidence" data-bind="bloom.evidence" placeholder="例：即使很怕，我还是每次把方案做完；有一次小组讨论，我提出过一个不同意见，最后被采纳了。">${esc(d.evidence)}</textarea>
+        </div>
+        <div class="field">
+          <label class="field-label" for="bloomSupport">谁或什么，可以陪你继续？ <span class="optional">可以留空</span></label>
+          <input id="bloomSupport" type="text" data-bind="bloom.support" value="${escAttr(d.support)}" placeholder="例：一位信任的同事 / 每周一次散步 / 这个页面">
+        </div>
+      </div>
+      ${actionMarkup('bloom', 1)}
+    </div>`;
+}
+
+function bloomStep2() {
+  const d = state.bloom;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.bloom[2]}</div>
+      <h2>今天，你愿意为自己<br><em>种下哪一件小事？</em></h2>
+      <p class="step-desc">不写“我要变好”，只写一件具体、轻一点、五分钟内能开始的事。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="bloomAction">一颗小种子</label>
+          <textarea id="bloomAction" data-bind="bloom.action" placeholder="例：下一次会议，至少说出一个完整的句子，不先说“可能不对”。">${esc(d.action)}</textarea>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"/></svg>
+          <span>做到一点，就算数。没有完成，也不代表你失败了。</span>
+        </div>
+      </div>
+      ${actionMarkup('bloom', 2)}
+    </div>`;
+}
+
+function bloomStep3() {
+  ensureSummary('bloom');
+  const d = state.bloom;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.bloom[3]}</div>
+      <h2>把这一束光，<em>收拢成一颗种子。</em></h2>
+      <p class="step-desc">你不需要等到状态完美，才配为自己做一点事。这颗种子会进入最后的“新生”。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的种子</span><span>会进入新生</span></div>
+          <textarea id="bloomSummary" data-bind="bloom.summary" aria-label="绽放的种子" style="min-height:120px">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这段话' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">保留具体行动，不把它改成宏大计划。</span>
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('bloom', 3)}
+    </div>`;
+}
+
+function renewStep0() {
+  const d = state.renew;
+  return `
+    <div class="step-card" data-step="01">
+      <div class="step-kicker">${DEPTH_KICKERS.renew[0]}</div>
+      <h2>如果重新讲这段路，<br><em>你会怎样开头？</em></h2>
+      <p class="step-desc">不是否认发生过的事，而是把“我经历过什么”和“我现在是谁”放回它们该在的位置。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="renewNarrative">新的开头</label>
+          <textarea id="renewNarrative" data-bind="renew.narrative" placeholder="例：我曾以为，只有足够好、足够懂事，才不会给别人添麻烦。现在我愿意学习，在不完美里也给自己一个位置。">${esc(d.narrative)}</textarea>
+        </div>
+        <div class="chip-group">
+          <p class="chip-title">可以从这里开始</p>
+          <div class="chips">
+            ${['我曾以为……', '现在我看见……', '我愿意……'].map(text => `<button type="button" class="chip" data-append="renew.narrative" data-text="${escAttr(text)}">${esc(text)}</button>`).join('')}
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('renew', 0)}
+    </div>`;
+}
+
+function renewStep1() {
+  const d = state.renew;
+  return `
+    <div class="step-card" data-step="02">
+      <div class="step-kicker">${DEPTH_KICKERS.renew[1]}</div>
+      <h2>你想带走什么，<br><em>又想放下什么？</em></h2>
+      <p class="step-desc">不是所有东西都要带走，也不是所有东西都能立刻放下。先诚实地分开它们。</p>
+      <div class="step-fields">
+        <div class="two-col">
+          <div class="field">
+            <label class="field-label" for="renewTake">我想带走</label>
+            <textarea id="renewTake" data-bind="renew.take" placeholder="例：对自己的耐心，和表达需要的能力。">${esc(d.take)}</textarea>
+          </div>
+          <div class="field">
+            <label class="field-label" for="renewLeave">我想慢慢放下</label>
+            <textarea id="renewLeave" data-bind="renew.leave" placeholder="例：用完美换取安全的旧办法。">${esc(d.leave)}</textarea>
+          </div>
+        </div>
+      </div>
+      ${actionMarkup('renew', 1)}
+    </div>`;
+}
+
+function renewStep2() {
+  const d = state.renew;
+  return `
+    <div class="step-card" data-step="03">
+      <div class="step-kicker">${DEPTH_KICKERS.renew[2]}</div>
+      <h2>从今以后，<br><em>你愿意怎样对待自己？</em></h2>
+      <p class="step-desc">不是一句口号，而是一个在难的时候能想起来的方向。</p>
+      <div class="step-fields">
+        <div class="field">
+          <label class="field-label" for="renewCommitment">我愿意</label>
+          <textarea id="renewCommitment" data-bind="renew.commitment" placeholder="例：在责怪自己之前，先问一句：我现在需要什么？">${esc(d.commitment)}</textarea>
+        </div>
+        <div class="chip-group">
+          <p class="chip-title">日常里的锚点</p>
+          <div class="chips">${chipButtons(ANCHORS, d.anchors, 'renew.anchors')}</div>
+        </div>
+      </div>
+      ${actionMarkup('renew', 2)}
+    </div>`;
+}
+
+function renewStep3() {
+  ensureSummary('renew');
+  const d = state.renew;
+  return `
+    <div class="step-card" data-step="04">
+      <div class="step-kicker">${DEPTH_KICKERS.renew[3]}</div>
+      <h2>把走过的路，<em>收拢成新的叙事。</em></h2>
+      <p class="step-desc">这是你从七幕里带走的东西。它不需要完美，只需要属于你。</p>
+      <div class="step-fields">
+        <div class="summary-card">
+          <div class="summary-label"><span>你的新叙事</span><span>本次主线的最后一段</span></div>
+          <textarea id="renewSummary" data-bind="renew.summary" aria-label="新生的新叙事" style="min-height:160px">${esc(d.summary)}</textarea>
+          <div class="summary-actions">
+            <button class="polish-btn" type="button" data-action="polish" ${hasApiKey() ? '' : 'disabled'}>${hasApiKey() ? '让栖心润色这段文字' : '连接 DeepSeek 后可润色'}</button>
+            <span class="summary-hint">保留原意，不替你添加新的承诺。</span>
+          </div>
+        </div>
+        <div class="soft-note">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M12 3v18M5 8l7-5 7 5M5 16l7 5 7-5"/></svg>
+          <span>确认后，你会看到完整的七幕主线，也可以把它导出留存。</span>
+        </div>
+      </div>
+      ${actionMarkup('renew', 3)}
+    </div>`;
+}
+
+function renderStage() {
+  const stage = state.stage;
+  const d = stageData(stage);
+  ensureSummary(stage);
+  const renderers = {
+    see: [seeStep0, seeStep1, seeStep2, seeStep3],
+    trace: [traceStep0, traceStep1, traceStep2, traceStep3],
+    mourn: [mournStep0, mournStep1, mournStep2, mournStep3],
+    accept: [acceptStep0, acceptStep1, acceptStep2, acceptStep3],
+    reframe: [reframeStep0, reframeStep1, reframeStep2, reframeStep3],
+    bloom: [bloomStep0, bloomStep1, bloomStep2, bloomStep3],
+    renew: [renewStep0, renewStep1, renewStep2, renewStep3]
+  };
+  const stepRenderer = (renderers[stage] || renderers.see)[d.step];
+  const main = $('#stageMain');
+  main.innerHTML = `
+    ${stageHeader(stage)}
+    ${carryBand(stage)}
+    ${renderDepthRail(stage, d.step, d.completed)}
+    ${stepRenderer ? stepRenderer() : ''}
+    ${stageBottomNav(stage, d.step)}
+  `;
+  main.style.animation = 'none';
+  void main.offsetWidth;
+  main.style.animation = '';
+}
+
+/* ---------------- validation & step flow ---------------- */
+function validateStep(stage, step) {
+  const d = stageData(stage);
+  if (stage === 'see') {
+    if (step === 0 && !d.event.trim()) return { ok: false, message: '先写下一个具体时刻，哪怕只有一句话。', focus: '#seeEvent' };
+    if (step === 1 && !d.emotions.length && !d.body.length && !d.felt.trim()) return { ok: false, message: '选一个情绪或身体感受，或者写一句“最难受的部分”。', focus: null };
+    if (step === 2 && !d.need.trim() && !d.needTags.length) return { ok: false, message: '给它一个需要：可以点选，也可以自己写。', focus: '#seeNeed' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '还差一句“带走的话”。可以自己写，也可以让上一层的记录先替你组织。', focus: '#seeSummary' };
+  } else if (stage === 'trace') {
+    if (step === 0 && !d.earliest.trim()) return { ok: false, message: '写下一个画面或一句“说不清”，再继续。', focus: '#traceEarliest' };
+    if (step === 1 && !d.childState.trim() && !d.childNeed.trim() && !d.childNeedTags.length) return { ok: false, message: '写一点那个更小的你，或者选一个 TA 需要的东西。', focus: '#traceChildState' };
+    if (step === 2 && !d.protection.trim() && !d.protections.length && !d.cost.trim()) return { ok: false, message: '先写一点：它保护了你什么，或让你付出了什么。', focus: '#traceProtection' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '来路卡还没有内容。可以先写“现在我可以……”这一行。', focus: '#traceSummary' };
+  } else if (stage === 'mourn') {
+    if (step === 0 && !d.loss.trim() && !d.lossTags.length) return { ok: false, message: '选一个靠近的，或写一句：那时你失去了什么。', focus: '#mournLoss' };
+    if (step === 1 && !d.feelTags.length && !d.unsaid.trim()) return { ok: false, message: '选一个感受，或写一句没来得及说的话。', focus: '#mournUnsaid' };
+    if (step === 2 && !d.farewell.trim() && !d.farewellTags.length && !d.keep.trim()) return { ok: false, message: '写一点：你愿意告别什么，或想留下什么。', focus: '#mournFarewell' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '告别句还没有内容。可以先写“我为……难过”这一行。', focus: '#mournSummary' };
+  } else if (stage === 'accept') {
+    if (step === 0 && !d.resist.trim() && !d.resistanceTags.length) return { ok: false, message: '先写下或选一句：你正在推开什么。', focus: '#acceptResist' };
+    if (step === 1 && !d.allow.trim() && !d.kindnessTags.length) return { ok: false, message: '先借一句温柔的话给自己，哪怕还不太相信。', focus: '#acceptAllow' };
+    if (step === 2 && !d.truth.trim() && !d.notGiveUp.trim()) return { ok: false, message: '写一点：你承认什么，或你仍然不放弃什么。', focus: '#acceptTruth' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '允许句还没有内容。可以先把上一层的记录收拢起来。', focus: '#acceptSummary' };
+  } else if (stage === 'reframe') {
+    if (step === 0 && !d.thought.trim()) return { ok: false, message: '先把卡住你的那句话原样写下来。', focus: '#reframeThought' };
+    if (step === 1 && !d.facts.trim() && !d.interpretation.trim()) return { ok: false, message: '至少写一边：事实，或你当时的解释。', focus: '#reframeFacts' };
+    if (step === 2 && !d.newStory.trim() && !d.alternative.trim()) return { ok: false, message: '先写一句：还有没有别的可能，或你更愿意相信什么。', focus: '#reframeNewStory' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '新故事还没有内容。可以先写“我更愿意相信……”这一行。', focus: '#reframeSummary' };
+  } else if (stage === 'bloom') {
+    if (step === 0 && !d.strengths.length && !d.moments.trim()) return { ok: false, message: '先选一个你认得的自己，或写一个有生命力的瞬间。', focus: '#bloomMoments' };
+    if (step === 1 && !d.evidence.trim() && !d.moments.trim()) return { ok: false, message: '举一个具体的例子，让这份资源落到地上。', focus: '#bloomEvidence' };
+    if (step === 2 && !d.action.trim()) return { ok: false, message: '写一件很小、五分钟内能开始的事。', focus: '#bloomAction' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '种子还没有内容。可以先写一件具体的行动。', focus: '#bloomSummary' };
+  } else if (stage === 'renew') {
+    if (step === 0 && !d.narrative.trim()) return { ok: false, message: '先写下新的开头，哪怕只有一句话。', focus: '#renewNarrative' };
+    if (step === 1 && !d.take.trim() && !d.leave.trim()) return { ok: false, message: '写一点：你想带走什么，或想慢慢放下什么。', focus: '#renewTake' };
+    if (step === 2 && !d.commitment.trim() && !d.anchors.length) return { ok: false, message: '写一句你愿意怎样对待自己，或选一个日常锚点。', focus: '#renewCommitment' };
+    if (step === 3 && !d.summary.trim()) return { ok: false, message: '新叙事还没有内容。可以把前面的记录先收拢起来。', focus: '#renewSummary' };
+  }
+  return { ok: true };
+}
+
+function showStepError(result) {
+  showToast(result.message, 3300);
+  if (result.focus) {
+    const field = $(result.focus);
+    if (field) {
+      field.focus({ preventScroll: false });
+      field.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }
+}
+
+function saveStep() {
+  const stage = state.stage;
+  const d = stageData(stage);
+  const step = d.step;
+  const check = validateStep(stage, step);
+  if (!check.ok) { showStepError(check); return; }
+  offerSafetyNotice(JSON.stringify(d));
+
+  d.completed[step] = true;
+  d.updatedAt = Date.now();
+  if (step < 3) {
+    d.step = step + 1;
+    d.summary = '';
+    ensureSummary(stage);
+    if (d.done && d.summary.trim()) state.thread[stage] = d.summary;
+    d.reflection = '';
+    d.reflectionStep = step;
+    d.reflectionLoading = true;
+    d.reflectionError = '';
+    saveNow();
+    renderAll();
+    scrollStageTop();
+    runReflection(stage, step);
+  }
+}
+
+function scrollStageTop() {
+  const main = $('#stageMain');
+  if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function goToStep(step) {
+  const d = stageData();
+  if (step < 0 || step > 3) return;
+  if (step > d.step && !d.completed[step]) return;
+  d.step = step;
+  saveNow();
+  renderStage();
+  renderCompanion();
+  scrollStageTop();
+}
+
+function switchStage(id) {
+  if (!STAGE_META[id]) return;
+  if (!isStageAvailable(id)) {
+    const previous = PREV_STAGE[id];
+    showToast(previous ? `先完成「${STAGE_META[previous].label}」的收束，再把内容带过来。` : '先完成上一幕。', 3200);
+    return;
+  }
+  if (state.stage === id) return;
+  if (reflectionController) reflectionController.abort();
+  reflectionSeq += 1;
+  state.stage = id;
+  const d = state[id];
+  if (!d.reflection) {
+    d.reflection = stageIntro(id);
+    d.reflectionStep = -1;
+  }
+  saveNow();
+  renderAll();
+  const main = $('#stageMain');
+  if (main) main.scrollTop = 0;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ---------------- reflection / local fallback ---------------- */
+function stageIntro(stage) {
+  if (stage === 'see') return '我在这里。我们不急着分析，先把刚才那一刻放慢。你可以从写下那个具体画面开始。';
+  const previous = PREV_STAGE[stage];
+  const carry = previous && state.thread[previous]
+    ? `你把「${compact(threadBody(state.thread[previous], STAGE_META[previous].label), 44)}」带到了这里。`
+    : '';
+  const bodies = {
+    trace: '我们不急着找唯一的原因，只看看它最早在哪里出现。',
+    mourn: '先不急着接纳。有些东西，值得先好好告别。可以慢慢写，也可以随时停下。',
+    accept: '告别之后，先不急着改变。看看你还在和哪一部分的自己打架。',
+    reframe: '允许之后，我们来看看那个旧故事，是否还有别的讲述方式。',
+    bloom: '现在，看看你身上的光。它可能比你以为的更早就在那里。',
+    renew: '把前六幕收拢成一条可以继续走的路，然后带回日常。'
+  };
+  return carry + (bodies[stage] || '慢一点，我们从此刻开始。');
+}
+
+function reflectionKicker(stage) {
+  const d = stageData(stage);
+  if (d.reflectionLoading) return '栖心正在整理';
+  if (d.reflectionStep >= 0) return `关于第 ${d.reflectionStep + 1} 层 · ${DEPTH_LABELS[stage][d.reflectionStep]}`;
+  const previous = PREV_STAGE[stage];
+  return previous && state.thread[previous] ? `从${STAGE_META[previous].label}带来` : '此刻的注脚';
+}
+
+function renderCompanion() {
+  const stage = state.stage;
+  const d = stageData(stage);
+  const status = $('#companionStatus');
+  const kicker = $('#reflectionKicker');
+  const text = $('#reflectionText');
+  const sign = $('#reflectionSign');
+  const error = $('#reflectionError');
+  if (!text) return;
+
+  if (status) {
+    status.textContent = hasApiKey() ? `DeepSeek · ${state.settings.model}` : '本地注脚';
+    status.classList.toggle('connected', hasApiKey());
+  }
+  if (kicker) kicker.textContent = reflectionKicker(stage);
+  if (sign) sign.hidden = d.reflectionLoading;
+
+  if (d.reflectionLoading) {
+    text.className = 'reflection-text';
+    text.innerHTML = '正在听你刚才写下的。<span class="typing-dots"><i></i><i></i><i></i></span>';
+  } else if (d.reflection && d.reflection.trim()) {
+    text.className = 'reflection-text';
+    text.textContent = d.reflection;
+  } else {
+    text.className = 'reflection-text placeholder';
+    text.textContent = stageIntro(stage);
+  }
+
+  if (error) {
+    error.hidden = !d.reflectionError;
+    error.textContent = d.reflectionError || '';
+  }
+}
+
+function updateReflectionLive(value) {
+  const text = $('#reflectionText');
+  if (!text) return;
+  text.className = 'reflection-text';
+  text.textContent = value;
+}
+
+function localReflection(stage, step) {
+  if (stage === 'see') {
+    const d = state.see;
+    if (step === 0) {
+      return `你写下的不是一个抽象的问题，而是一个具体的时刻：${cleanEnd(compact(d.event, 38))}。先不急着解释它为什么发生。让这个画面在这里停一会儿，它已经足够说明，你当时并不轻松。`;
+    }
+    if (step === 1) {
+      const body = d.body.length ? d.body.join('、') : '身体还在沉默';
+      const emotions = d.emotions.length ? d.emotions.join('、') : '一种说不清的情绪';
+      return `你认出了${emotions}，身体也在说：${body}。这些反应不是矫情，也不是需要立刻修正的错误。它们更像是身体在替你守着一个很重要的东西。`;
+    }
+    if (step === 2) {
+      return `你需要的，可能不是别人立刻改变，而是${needPhrase(d)}。这句话越具体，越不容易被自己忽略。它不是要求，而是一个可以慢慢靠近的方向。`;
+    }
+    return `你已经把这一刻放进了语言里。接下来只带走一句最诚实的话，不带走全部解释。剩下那些还没有说清的，可以留在下一幕继续。`;
+  }
+
+  if (stage === 'trace') {
+    const d = state.trace;
+    if (step === 0) {
+      const where = cleanEnd(d.age) || '某个尚未命名的时刻';
+      return `你从「${compact(threadBody(state.thread.see, '我看见'), 30)}」出发，回到了${where}。这不是在翻旧账，而是在给那段经历一个可以被理解的位置。`;
+    }
+    if (step === 1) {
+      const child = d.childState.trim() ? cleanEnd(compact(d.childState, 48)) : '在用 TA 当时会的方式撑住自己';
+      return `那个更小的你，当时${child}。TA 需要的，可能不是完美，而是${cleanEnd(d.childNeed || d.childNeedTags.join('、')) || '有人站在 TA 那边'}。这句话不是迟到的补偿，而是现在的你，终于看见了 TA。`;
+    }
+    if (step === 2) {
+      return `这个方式曾经${cleanEnd(protectionText(d))}，也让你${cleanEnd(compact(d.cost, 46)) || '付出了一些说不清的代价'}。看见它，不等于责怪它。它只是曾经尽力保护过你，而现在，你可以慢慢选择不同的方式。`;
+    }
+    return `这条来路不是判决书，而是一张地图。它告诉你，你从哪里来，也提醒你：现在的你，已经可以为自己做一点不同的选择。`;
+  }
+
+  if (stage === 'mourn') {
+    const d = state.mourn;
+    if (step === 0) {
+      return `你写下失去的是「${cleanEnd(compact(d.loss, 36)) || d.lossTags.join('、') || '一些说不清的东西'}」。它不需要被证明有多严重，才有资格被认真对待。`;
+    }
+    if (step === 1) {
+      return `${d.feelTags.length ? '你感到' + d.feelTags.join('、') + '。' : ''}这些感受不是要被处理掉的问题，它们是在告诉你：那里曾经很重要。可以先让它们在这里。`;
+    }
+    if (step === 2) {
+      return `你愿意告别「${cleanEnd(compact(d.farewell, 34)) || d.farewellTags.join('、') || '一部分不再需要背着的东西'}」，也留下了「${cleanEnd(compact(d.keep, 30)) || '值得留下的'}」。告别不是忘记，是让它回到过去该在的位置。`;
+    }
+    return `这句告别不需要让你释然。失去是真的，难过也是真的。你带走的，会陪你去看看：现在，还剩下哪一部分你仍然推开。`;
+  }
+
+  if (stage === 'accept') {
+    const d = state.accept;
+    if (step === 0) {
+      const resistance = cleanEnd(d.resist) || d.resistanceTags.join('、') || '一个还不愿意被看见的部分';
+      return `你写下的「${compact(resistance, 34)}」，不是脾气，也不是脆弱。它更像一个还在努力保护你的部分。先不急着把它赶走，先让它被看见。`;
+    }
+    if (step === 1) {
+      return `你愿意对自己说：「${cleanEnd(compact(d.allow, 42)) || d.kindnessTags.join('、') || '你可以先在这里待一会儿'}」。这句话不是纵容，而是在停止“我不该这样”的二次伤害。`;
+    }
+    if (step === 2) {
+      return `你承认「${cleanEnd(compact(d.truth, 36)) || '有些事确实发生过'}」，同时没有放弃「${cleanEnd(compact(d.notGiveUp, 34)) || '自己的方向'}」。接纳和方向，可以同时存在。`;
+    }
+    return `允许不是认命，而是不再和自己打架。你带走的这句话，会陪你去看看旧故事是如何形成的。`;
+  }
+
+  if (stage === 'reframe') {
+    const d = state.reframe;
+    if (step === 0) {
+      return `你卡住的那句话是「${cleanEnd(compact(d.thought, 38))}」。先把它当作一个故事，而不是一条事实。故事可以被重新讲述。`;
+    }
+    if (step === 1) {
+      return `事实是「${cleanEnd(compact(d.facts, 34)) || '发生过的事'}」，解释是「${cleanEnd(compact(d.interpretation, 34)) || '你当时赋予它的意义'}」。把它们分开，故事就不再是铁板一块。`;
+    }
+    if (step === 2) {
+      return `你愿意相信：「${cleanEnd(compact(d.newStory || d.alternative, 44)) || '还有别的可能'}」。它不需要立刻取代旧故事，只需要先有一个位置。`;
+    }
+    return `旧故事不会一夜消失。新故事先存在，慢慢长出重量。你不需要强迫自己相信，只需要允许它暂时放在旁边。`;
+  }
+
+  if (stage === 'bloom') {
+    const d = state.bloom;
+    if (step === 0) {
+      const strengths = d.strengths.join('、') || cleanEnd(compact(d.moments, 28)) || '一些还没有被命名的力量';
+      return `你认出了${strengths}。这些不是装饰，是你走到今天的资源。它们可能不响亮，但一直在。`;
+    }
+    if (step === 1) {
+      return `它们曾帮助你「${cleanEnd(compact(d.evidence || d.moments, 50)) || '撑过一些不容易的时刻'}」。资源不是抽象的词，是发生过的事实。`;
+    }
+    if (step === 2) {
+      return `你为自己种下「${cleanEnd(compact(d.action, 44)) || '一件很小的事'}」。小，才更容易在真实生活里发生。做到一点，就算数。`;
+    }
+    return `这颗种子会进入新生。行动不必大，持续也不必完美。`;
+  }
+
+  const d = state.renew;
+  if (step === 0) {
+    return `你写下新的开头：「${cleanEnd(compact(d.narrative, 44))}」。它不是抹掉过去，而是给过去一个位置，同时给现在的你一个方向。`;
+  }
+  if (step === 1) {
+    return `你想带走「${cleanEnd(compact(d.take, 32)) || '一些新的东西'}」，想放下「${cleanEnd(compact(d.leave, 32)) || '一些不再适合的东西'}」。分开它们，本身就是一种选择。`;
+  }
+  if (step === 2) {
+    return `你愿意「${cleanEnd(compact(d.commitment, 44)) || '对自己温柔一点'}」。这不是口号，是以后可以回来的方向。`;
+  }
+  return `七幕走到这里。你带走的不只是一个答案，而是一条可以继续走的路。反复的时候，记得回来。`;
+}
+
+function reflectionPrompt(stage, step) {
+  const d = stageData(stage);
+  let record = '';
+  if (stage === 'see') {
+    if (step === 0) record = `具体时刻：${d.event}`;
+    if (step === 1) record = `具体时刻：${d.event}\n情绪：${d.emotions.join('、') || '未命名'}\n身体：${d.body.join('、') || '未记录'}\n强度：${d.intensity}/10\n最难受的部分：${d.felt || '未写'}`;
+    if (step === 2) record = `具体时刻：${d.event}\n情绪：${d.emotions.join('、')}\n身体：${d.body.join('、')}\n需要标签：${d.needTags.join('、') || '未选'}\n它想说的话：${d.need || '未写'}`;
+    if (step === 3) record = `看见的收束句：${d.summary}`;
+  } else if (stage === 'trace') {
+    if (step === 0) record = `从看见带来的句子：${state.thread.see}\n大约年龄：${d.age || '未写'}\n更早的画面：${d.earliest}`;
+    if (step === 1) record = `更早的画面：${d.age ? d.age + '，' : ''}${d.earliest}\n那个孩子当时：${d.childState}\nTA 的需要：${d.childNeed || d.childNeedTags.join('、') || '未写'}`;
+    if (step === 2) record = `更早的画面：${d.age ? d.age + '，' : ''}${d.earliest}\n保护方式：${d.protection || d.protections.join('、') || '未写'}\n付出的代价：${d.cost || '未写'}`;
+    if (step === 3) record = `来路卡：\n${d.summary}`;
+  } else if (stage === 'mourn') {
+    if (step === 0) record = `从溯源带来的来路：${state.thread.trace}\n失去的是：${d.loss || d.lossTags.join('、') || '未写'}`;
+    if (step === 1) record = `失去的是：${d.loss || d.lossTags.join('、') || '未写'}\n感受：${d.feelTags.join('、') || '未选'}\n没来得及说的话：${d.unsaid || '未写'}`;
+    if (step === 2) record = `愿意告别：${d.farewell || d.farewellTags.join('、') || '未写'}\n想留下：${d.keep || '未写'}`;
+    if (step === 3) record = `告别句：\n${d.summary}`;
+  } else if (stage === 'accept') {
+    if (step === 0) record = `从哀悼带来的告别句：${state.thread.mourn || state.thread.trace}\n仍在抗拒：${d.resist || d.resistanceTags.join('、') || '未写'}`;
+    if (step === 1) record = `仍在抗拒：${d.resist || d.resistanceTags.join('、') || '未写'}\n愿意对自己说：${d.allow || d.kindnessTags.join('、') || '未写'}`;
+    if (step === 2) record = `我承认：${d.truth || '未写'}\n但我仍然：${d.notGiveUp || '未写'}`;
+    if (step === 3) record = `允许句：${d.summary}`;
+  } else if (stage === 'reframe') {
+    if (step === 0) record = `从接纳带来的允许句：${state.thread.accept}\n卡住的念头：${d.thought || '未写'}\n思维惯性：${d.distortions.join('、') || '未选'}`;
+    if (step === 1) record = `旧故事：${d.thought || '未写'}\n事实：${d.facts || '未写'}\n解释：${d.interpretation || '未写'}`;
+    if (step === 2) record = `其他可能：${d.alternative || '未写'}\n更愿意相信：${d.newStory || '未写'}`;
+    if (step === 3) record = `新的故事：\n${d.summary}`;
+  } else if (stage === 'bloom') {
+    if (step === 0) record = `从重构带来的新故事：${state.thread.reframe}\n认出的力量：${d.strengths.join('、') || '未选'}\n有生命力的瞬间：${d.moments || '未写'}`;
+    if (step === 1) record = `力量：${d.strengths.join('、') || '未选'}\n具体例子：${d.evidence || '未写'}\n支持资源：${d.support || '未写'}`;
+    if (step === 2) record = `想种下的小事：${d.action || '未写'}`;
+    if (step === 3) record = `种子：\n${d.summary}`;
+  } else {
+    if (step === 0) record = `从绽放带来的种子：${state.thread.bloom}\n新的开头：${d.narrative || '未写'}`;
+    if (step === 1) record = `想带走：${d.take || '未写'}\n想放下：${d.leave || '未写'}`;
+    if (step === 2) record = `我愿意：${d.commitment || '未写'}\n日常锚点：${d.anchors.join('、') || '未选'}`;
+    if (step === 3) record = `新的叙事：\n${d.summary}`;
+  }
+  const threadLines = STAGE_ORDER.filter(id => state.thread[id]).map(id => `${STAGE_META[id].label}：${state.thread[id]}`).join('\n') || '尚未形成';
+  return {
+    system: `你是“栖心”，一位温和、清醒、有边界感的心理陪伴者。你正在为一次自我探索写“注脚”，不是聊天。
+
+当前：${STAGE_META[stage].label} · ${DEPTH_LABELS[stage][step]}。
+本次主线：
+${threadLines}
+
+写作要求：
+- 2—3 句中文，80—150 字。
+- 先具体反映你听见的，再轻轻指出一个可能的深层线索，最后留一个安静的落点。
+- 不要提问。不要给建议。不要诊断。不要要求用户回复。
+- 不要重复用户原话，不要使用列表，不要使用“你应该”。
+- 不要提及这段说明。${stage === 'mourn' ? '\n- 这一幕是哀悼：只陪伴与承接，不催促放下，不要求原谅，不解读创伤，不评价当事人或相关的人。' : ''}
+- 安全优先：如果记录中出现自伤、自杀、他伤、现实危险或正在遭受暴力的迹象，停止常规注脚；用温和而直接的语言询问当下是否安全、是否有具体计划；鼓励立即联系可信任的人、拨打 120/110 或 12356；不要提供任何伤害方法；不要独自承担危机干预；不要诊断。`,
+    user: `请根据以下记录写注脚。\n\n${record || '用户还没有写下内容，只写一句安静的陪伴。'}`
+  };
+}
+
+async function streamCompletion(messages, onDelta, signal, maxTokens = 320) {
+  const key = getApiKey();
+  if (!key) throw new Error('NO_KEY');
+  const model = state.settings.model || 'deepseek-chat';
+  const body = {
+    model,
+    messages,
+    stream: true,
+    max_tokens: model === 'deepseek-reasoner' ? Math.max(900, maxTokens) : maxTokens
+  };
+  if (model !== 'deepseek-reasoner') body.temperature = Number(state.settings.temperature) || 0.8;
+  let response;
+  try {
+    response = await fetch(endpointFrom(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`,
+        'Accept': 'text/event-stream'
+      },
+      body: JSON.stringify(body),
+      signal
+    });
+  } catch (err) {
+    if (err.name === 'AbortError') throw err;
+    const error = new Error('NETWORK');
+    error.cause = err;
+    throw error;
+  }
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const data = await response.json();
+      detail = data.error && (data.error.message || data.error.type) ? (data.error.message || data.error.type) : '';
+    } catch (_) { /* ignore */ }
+    const error = new Error(detail || `HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  if (!response.body) {
+    const data = await response.json();
+    const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+    if (content) onDelta(content);
+    return;
+  }
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8');
+  let buffer = '';
+  let done = false;
+  while (!done) {
+    const chunk = await reader.read();
+    if (chunk.done) break;
+    buffer += decoder.decode(chunk.value, { stream: true });
+    let match;
+    while ((match = buffer.match(/\r?\n\r?\n/))) {
+      const block = buffer.slice(0, match.index);
+      buffer = buffer.slice(match.index + match[0].length);
+      for (const line of block.split(/\r?\n/)) {
+        const trimmed = line.trim();
+        if (!trimmed.startsWith('data:')) continue;
+        const data = trimmed.slice(5).trim();
+        if (!data || data === '[DONE]') { done = true; continue; }
+        try {
+          const json = JSON.parse(data);
+          const delta = json.choices && json.choices[0]
+            ? (json.choices[0].delta && json.choices[0].delta.content) || ''
+            : '';
+          if (delta) onDelta(delta);
+        } catch (_) { /* keep */ }
+      }
+    }
+  }
+}
+
+async function runReflection(stage, step) {
+  const seq = ++reflectionSeq;
+  if (reflectionController) reflectionController.abort();
+  const controller = new AbortController();
+  reflectionController = controller;
+  const d = state[stage];
+  const local = localReflection(stage, step);
+
+  if (!hasApiKey()) {
+    await new Promise(resolve => setTimeout(resolve, 420));
+    if (seq !== reflectionSeq) return;
+    d.reflection = local;
+    d.reflectionLoading = false;
+    d.reflectionStep = step;
+    d.reflectionError = '';
+    saveNow();
+    if (reflectionController === controller) reflectionController = null;
+    if (state.stage === stage) renderCompanion();
+    return;
+  }
+
+  const prompt = reflectionPrompt(stage, step);
+  let received = false;
+  try {
+    await streamCompletion(
+      [{ role: 'system', content: prompt.system }, { role: 'user', content: prompt.user }],
+      delta => {
+        if (seq !== reflectionSeq) return;
+        if (!received) {
+          received = true;
+          d.reflectionLoading = false;
+          if (state.stage === stage) {
+            const sign = $('#reflectionSign');
+            if (sign) sign.hidden = false;
+          }
+        }
+        d.reflection += delta;
+        if (state.stage === stage) updateReflectionLive(d.reflection);
+      },
+      controller.signal,
+      320
+    );
+    if (seq !== reflectionSeq) return;
+    if (!received) throw new Error('EMPTY');
+    d.reflectionLoading = false;
+    d.reflectionStep = step;
+    d.reflectionError = '';
+    saveNow();
+    if (state.stage === stage) renderCompanion();
+  } catch (err) {
+    if (err.name === 'AbortError' || seq !== reflectionSeq) return;
+    d.reflection = local;
+    d.reflectionLoading = false;
+    d.reflectionStep = step;
+    d.reflectionError = friendlyApiError(err, true);
+    saveNow();
+    if (state.stage === stage) renderCompanion();
+  } finally {
+    if (reflectionController === controller) reflectionController = null;
+  }
+}
+
+function friendlyApiError(err, short = false) {
+  if (!err) return '连接没有成功。';
+  if (err.message === 'NO_KEY') return '还没有连接 DeepSeek，已使用本地注脚。';
+  if (err.message === 'EMPTY') return '这次没有收到完整回应，已使用本地注脚。';
+  if (err.message === 'NETWORK' || err instanceof TypeError) return '浏览器没能连上 DeepSeek，已使用本地注脚。可以在设置里测试连接。';
+  if (err.status === 401) return 'API Key 无效或已失效（401），已使用本地注脚。';
+  if (err.status === 402) return '账户余额不足（402），已使用本地注脚。';
+  if (err.status === 429) return '请求有点频繁（429），已使用本地注脚，稍后再试。';
+  if (err.status >= 500) return `DeepSeek 服务暂时不稳定（${err.status}），已使用本地注脚。`;
+  return short ? '连接未成功，已使用本地注脚。' : `连接未成功：${err.message || '未知错误'}`;
+}
+function connectionErrorText(err) {
+  if (!err) return '连接没有成功。';
+  if (err.message === 'NETWORK' || err instanceof TypeError) return '浏览器没能连上接口。请检查网络、接口地址和 Key 是否完整。';
+  if (err.status === 401) return 'API Key 无效或已失效（401）。';
+  if (err.status === 402) return '账户余额不足（402）。';
+  if (err.status === 404) return '接口地址不存在（404）。';
+  if (err.status === 429) return '请求有点频繁（429），稍后再试。';
+  if (err.status >= 500) return `服务暂时不稳定（${err.status}）。`;
+  return `连接未成功：${err.message || '未知错误'}`;
+}
+
+/* ---------------- finish & handoff ---------------- */
+function finishStage() {
+  const stage = state.stage;
+  const d = stageData(stage);
+  const check = validateStep(stage, 3);
+  if (!check.ok) { showStepError(check); return; }
+  offerSafetyNotice(d.summary);
+  d.summary = d.summary.trim();
+  d.done = true;
+  d.completed[3] = true;
+  d.updatedAt = Date.now();
+  state.thread[stage] = d.summary;
+  if (stage === 'renew') state.meta.completedAt = Date.now();
+  saveNow();
+  renderAll();
+  if (stage === 'renew') openCompletion();
+  else openHandoff(stage);
+}
+
+function openHandoff(stage) {
+  const index = STAGE_ORDER.indexOf(stage);
+  const next = STAGE_ORDER[index + 1];
+  if (!next) { openCompletion(); return; }
+  const nextLabel = STAGE_META[next].label;
+  const quote = state.thread[stage];
+  const layer = openModal(`
+    <div class="modal handoff-modal" role="dialog" aria-modal="true" aria-label="带着这一句去${escAttr(nextLabel)}">
+      <div class="handoff-card">
+        <div class="handoff-mark">线</div>
+        <div class="modal-kicker">你带走了一句话</div>
+        <h2>现在，<em>带着它去${esc(nextLabel)}。</em></h2>
+        <div class="handoff-quote">${esc(quote)}</div>
+        <p>下一幕不会再从空白开始。它会把这句话放在最上面，作为第一层的起点。</p>
+        <div class="handoff-actions">
+          <button class="primary-btn" type="button" id="handoffGo">带着它去${esc(nextLabel)}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"/></svg>
+          </button>
+          <button class="secondary-btn" type="button" id="handoffStay">再留一会儿</button>
+        </div>
+      </div>
+    </div>`, { focus: '#handoffGo' });
+  layer.querySelector('#handoffGo').addEventListener('click', () => {
+    closeModal(layer);
+    setTimeout(() => switchStage(next), 170);
+  });
+  layer.querySelector('#handoffStay').addEventListener('click', () => closeModal(layer));
+}
+
+function openCompletion() {
+  const rows = STAGE_ORDER.map(id => {
+    const body = threadDisplay(id, state.thread[id]);
+    return `<div class="complete-thread-row"><dt>${esc(STAGE_META[id].label)}</dt><dd class="${body ? '' : 'empty'}">${esc(body || '尚未形成')}</dd></div>`;
+  }).join('');
+  const layer = openModal(`
+    <div class="modal wide" role="dialog" aria-modal="true" aria-label="七幕完成">
+      ${modalHead('SEVEN ACTS · ONE THREAD', '七幕，走到这里', '这不是终点，而是一条可以继续走的路。反复的时候，记得回来。')}
+      <div class="modal-body">
+        <p class="complete-scroll-hint">完整主线共七段 · 可向下滚动</p>
+        <div class="complete-wrap">
+          <div class="complete-card">
+            <div class="complete-seal">七幕<br>走过</div>
+            <h2>七幕 · 一条线</h2>
+            <div class="complete-acts">看见 · 溯源 · 接纳 · 重构 · 绽放 · 新生</div>
+            <p>${esc(formatDate(state.meta.completedAt))} · 你留下了一条属于自己的主线</p>
+            <dl class="complete-thread">${rows}</dl>
+          </div>
+          <div class="next-act-note"><span>这不是结束</span><b>当生活再次变得困难，你可以回到任何一幕，不必从头证明自己。</b></div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="secondary-btn" type="button" id="completeExportMd">保存七幕档案</button>
+        <button class="secondary-btn" type="button" id="completeExportJson">保存数据</button>
+        <button class="primary-btn" type="button" data-close>留在这里</button>
+      </div>
+    </div>`, { focus: '.modal-close' });
+  layer.querySelector('#completeExportMd').addEventListener('click', exportMarkdown);
+  layer.querySelector('#completeExportJson').addEventListener('click', exportJSON);
+}
+
+/* ---------------- AI polish ---------------- */
+async function callCompletionText(messages, maxTokens = 260) {
+  const key = getApiKey();
+  if (!key) throw new Error('NO_KEY');
+  const model = state.settings.model || 'deepseek-chat';
+  const body = {
+    model,
+    messages,
+    stream: false,
+    max_tokens: model === 'deepseek-reasoner' ? Math.max(700, maxTokens) : maxTokens
+  };
+  if (model !== 'deepseek-reasoner') body.temperature = 0.55;
+  let response;
+  try {
+    response = await fetch(endpointFrom(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify(body)
+    });
+  } catch (err) {
+    const error = new Error('NETWORK');
+    error.cause = err;
+    throw error;
+  }
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const data = await response.json();
+      detail = data.error && (data.error.message || data.error.type) ? (data.error.message || data.error.type) : '';
+    } catch (_) { /* ignore */ }
+    const error = new Error(detail || `HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  const data = await response.json();
+  const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content;
+  if (!content) throw new Error('EMPTY');
+  return String(content).trim().replace(/^["“]|["”]$/g, '');
+}
+
+async function polishCurrentSummary() {
+  if (polishBusy) return;
+  const stage = state.stage;
+  const d = stageData(stage);
+  if (!d.summary.trim()) {
+    showToast('先留下一点内容，再让栖心润色。');
+    return;
+  }
+  if (!hasApiKey()) {
+    showToast('连接 DeepSeek 后，可以让栖心帮你润色；现在这句话已经可以继续。', 3200);
+    return;
+  }
+  const button = $('[data-action="polish"]');
+  const oldText = button ? button.textContent : '';
+  polishBusy = true;
+  if (button) { button.disabled = true; button.textContent = '栖心正在整理…'; }
+  const isSee = stage === 'see';
+  const safety = ' 如果文本中出现自伤、自杀、他伤或现实危险内容，不要润色，只输出原文。';
+  const system = (isSee
+    ? '你是栖心的文字编辑。请把下面这句话润色成第一人称、温柔、具体、保留事实、不添加新信息、不超过80字的句子。不要提问，不要解释，不要引号。只输出润色后的那一句话。'
+    : '你是栖心的文字编辑。请润色下面这段自我探索记录，保留原有的换行与每行前缀，保留第一人称、事实与语气，不添加新信息，不解释，不提问。只输出润色后的文字。') + safety;
+  const summaryIds = {
+    see: '#seeSummary', trace: '#traceSummary', mourn: '#mournSummary', accept: '#acceptSummary',
+    reframe: '#reframeSummary', bloom: '#bloomSummary', renew: '#renewSummary'
+  };
+  try {
+    const result = await callCompletionText([
+      { role: 'system', content: system },
+      { role: 'user', content: d.summary }
+    ], isSee ? 180 : 380);
+    d.summary = result;
+    saveNow();
+    const textarea = $(summaryIds[stage]);
+    if (textarea) textarea.value = result;
+    showToast('已经润色好了，你可以继续修改。');
+  } catch (err) {
+    showToast(connectionErrorText(err), 3500);
+  } finally {
+    polishBusy = false;
+    if (button) { button.disabled = false; button.textContent = oldText; }
+  }
+}
+
+/* ---------------- stage input handlers ---------------- */
+function handleStageClick(event) {
+  const chip = event.target.closest('[data-chip]');
+  if (chip) {
+    const group = chip.dataset.chip;
+    const value = chip.dataset.value;
+    const arr = getPath(state, group);
+    if (!Array.isArray(arr)) return;
+    const index = arr.indexOf(value);
+    if (index >= 0) arr.splice(index, 1);
+    else arr.push(value);
+    chip.classList.toggle('selected', index < 0);
+    saveSoon();
+    return;
+  }
+
+  const append = event.target.closest('[data-append]');
+  if (append) {
+    const path = append.dataset.append;
+    const field = $(`[data-bind="${path}"]`);
+    if (field) {
+      const text = append.dataset.text || '';
+      const start = typeof field.selectionStart === 'number' ? field.selectionStart : field.value.length;
+      const end = typeof field.selectionEnd === 'number' ? field.selectionEnd : field.value.length;
+      const before = field.value.slice(0, start);
+      const after = field.value.slice(end);
+      const prefix = before && !before.endsWith('\n') ? '\n' : '';
+      field.value = before + prefix + text + after;
+      const pos = (before + prefix + text).length;
+      field.setSelectionRange(pos, pos);
+      field.focus();
+      setPath(state, path, field.value);
+      saveSoon();
+    }
+    return;
+  }
+
+  const depth = event.target.closest('[data-depth]');
+  if (depth) {
+    goToStep(Number(depth.dataset.depth));
+    return;
+  }
+
+  const actionEl = event.target.closest('[data-action]');
+  if (!actionEl) return;
+  const action = actionEl.dataset.action;
+  if (action === 'save-step') { saveStep(); return; }
+  if (action === 'prev-step') { goToStep(stageData().step - 1); return; }
+  if (action === 'finish') { finishStage(); return; }
+  if (action === 'back-stage') {
+    const target = actionEl.dataset.stage;
+    if (target) switchStage(target);
+    return;
+  }
+  if (action === 'open-thread') {
+    toggleThreadPanel(true);
+    const panel = $('#threadPanel');
+    if (panel) panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    return;
+  }
+  if (action === 'polish') { polishCurrentSummary(); return; }
+  if (action === 'open-case') { openCase(); return; }
+}
+
+function handleStageInput(event) {
+  const field = event.target.closest('[data-bind]');
+  if (field) {
+    const path = field.dataset.bind;
+    const cleanPath = path.startsWith('state.') ? path.slice(6) : path;
+    setPath(state, cleanPath, field.value);
+    if (cleanPath === `${state.stage}.summary` && state[state.stage].done) {
+      state.thread[state.stage] = field.value;
+      renderThread();
+    }
+    saveSoon();
+    return;
+  }
+  const range = event.target.closest('[data-range]');
+  if (range) {
+    const value = Number(range.value);
+    setPath(state, range.dataset.range, value);
+    range.style.setProperty('--val', `${value * 10}%`);
+    const label = $('#intensityValue');
+    if (label) label.textContent = value;
+    saveSoon();
+  }
+}
+
+/* ---------------- thread & settings ---------------- */
+function openThreadPanel() {
+  toggleThreadPanel(true);
+  const bar = $('.thread-bar');
+  if (bar) bar.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function openModal(html, options = {}) {
+  $$('.modal-layer').forEach(layer => layer.remove());
+  const layer = document.createElement('div');
+  layer.className = 'modal-layer';
+  layer.innerHTML = html;
+  document.body.appendChild(layer);
+  document.body.style.overflow = 'hidden';
+  layer.addEventListener('click', event => {
+    if (event.target === layer) closeModal(layer);
+    if (event.target.closest('[data-close]')) closeModal(layer);
+  });
+  requestAnimationFrame(() => {
+    const target = options.focus ? layer.querySelector(options.focus) : layer.querySelector('input, textarea, button');
+    if (target) target.focus({ preventScroll: true });
+  });
+  return layer;
+}
+
+function closeModal(layer) {
+  if (!layer || !layer.parentNode) return;
+  layer.style.animation = 'fadeIn .18s ease reverse both';
+  const modal = layer.querySelector('.modal');
+  if (modal) modal.style.animation = 'modalUp .18s ease reverse both';
+  setTimeout(() => {
+    layer.remove();
+    if (!$('.modal-layer')) document.body.style.overflow = '';
+  }, 160);
+}
+
+function modalHead(kicker, title, desc) {
+  return `
+    <div class="modal-head">
+      <div>
+        <div class="modal-kicker">${esc(kicker)}</div>
+        <h2>${esc(title)}</h2>
+        ${desc ? `<p>${esc(desc)}</p>` : ''}
+      </div>
+      <button class="modal-close" type="button" data-close aria-label="关闭">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>`;
+}
+
+function showConsentIfNeeded() {
+  try {
+    if (localStorage.getItem(CONSENT_KEY) === 'accepted') return;
+  } catch (_) { /* private mode or storage disabled */ }
+  const layer = document.createElement('div');
+  layer.className = 'consent-layer';
+  layer.innerHTML = `
+    <div class="consent-card" role="dialog" aria-modal="true" aria-label="使用前确认">
+      <div class="consent-mark" aria-hidden="true">栖</div>
+      <div class="consent-kicker">BEFORE YOU BEGIN</div>
+      <h2>在开始之前，<br><em>请先确认几件事。</em></h2>
+      <p class="consent-lead">栖心是一个自我探索与情绪书写工具。它不能替代心理治疗、医疗诊断或危机干预。</p>
+      <ul class="consent-list">
+        <li><b>数据默认留在本机。</b>你写下的内容保存在这个浏览器里，不会上传到我们的服务器；它并未加密。</li>
+        <li><b>连接 DeepSeek 时，内容会发送给 DeepSeek。</b>每一层记录和本次主线摘要会用于生成注脚或润色。你可以完全不连接 API，使用本地模式。</li>
+        <li><b>这不是危机服务。</b>如果你有伤害自己或他人的念头，请先联系一个真实的人，或拨打 120 / 110 / 12356，不要独自留在这个页面里。</li>
+        <li><b>AI 会犯错。</b>注脚只是陪伴性的文字，不是事实判断，也不构成专业建议。请保留自己的判断。</li>
+      </ul>
+      <div class="consent-checks">
+        <label class="consent-check"><input type="checkbox" id="consentAge"> 我已年满 18 岁，并理解这不是心理治疗或医疗建议。</label>
+        <label class="consent-check"><input type="checkbox" id="consentAgree"> 我已阅读并理解上面的数据与安全说明，愿意继续。</label>
+      </div>
+      <div class="consent-actions">
+        <button class="primary-btn" type="button" id="consentEnter" disabled>同意并进入</button>
+        <span class="mini-note">如果不方便，请先离开这个页面。</span>
+      </div>
+      <p class="consent-foot">继续即表示你同意本页的使用边界。详见 <a href="legal.html#privacy" target="_blank" rel="noopener">隐私说明</a> 与 <a href="legal.html#disclaimer" target="_blank" rel="noopener">免责声明</a>。</p>
+    </div>`;
+  document.body.appendChild(layer);
+  document.body.style.overflow = 'hidden';
+  const age = layer.querySelector('#consentAge');
+  const agree = layer.querySelector('#consentAgree');
+  const enter = layer.querySelector('#consentEnter');
+  const update = () => { enter.disabled = !(age.checked && agree.checked); };
+  age.addEventListener('change', update);
+  agree.addEventListener('change', update);
+  enter.addEventListener('click', () => {
+    if (enter.disabled) return;
+    try { localStorage.setItem(CONSENT_KEY, 'accepted'); } catch (_) { /* keep going for this session */ }
+    layer.remove();
+    document.body.style.overflow = '';
+  });
+  requestAnimationFrame(() => age.focus({ preventScroll: true }));
+}
+
+function openCase() {
+  const sections = CASE_REFERENCE.sections.map(section => `
+    <div class="case-section">
+      <div class="case-section-label">${esc(section.label)}</div>
+      <p class="case-section-text">${esc(section.text)}</p>
+    </div>`).join('');
+  openModal(`
+    <div class="modal wide case-modal" role="dialog" aria-modal="true" aria-label="案例参考">
+      ${modalHead('CASE REFERENCE', esc(CASE_REFERENCE.title), '先看一个典型的工作与童年创伤案例，再回到你自己的节奏。')}
+      <div class="modal-body">
+        <div class="case-meta">${esc(CASE_REFERENCE.name)} · ${esc(CASE_REFERENCE.meta)}</div>
+        <p class="case-intro">${esc(CASE_REFERENCE.intro)}</p>
+        <p class="case-scroll-hint">完整案例共七段 · 可向下滚动</p>
+        ${sections}
+        <p class="case-note"><b>说明：</b>${esc(CASE_REFERENCE.note)}</p>
+      </div>
+      <div class="modal-foot"><button class="primary-btn" type="button" data-close>返回练习</button></div>
+    </div>`, { focus: '.modal-close' });
+}
+
+function openSupport() {
+  openModal(`
+    <div class="modal narrow emergency-modal" role="dialog" aria-modal="true" aria-label="即时支持">
+      ${modalHead('RIGHT NOW', '此刻，先不一个人扛', '如果你有伤害自己的念头，这不是矫情，也不需要感到羞耻。先做一件小事：让自己离危险远一点，让一个真实的人知道。')}
+      <div class="modal-body">
+        <ul class="emergency-steps">
+          <li class="emergency-step"><span class="n">1</span><p><b>让身体先落地</b>把脚踩在地上，慢慢说出你看到的 5 样东西、听到的 4 种声音、摸到的 3 样东西。不用做对，只要让注意力回到此刻。</p></li>
+          <li class="emergency-step"><span class="n">2</span><p><b>联系一个真实的人</b>给一个你信任的人发消息或打电话。哪怕只说“我现在不太好，你能陪陪我吗”。</p></li>
+          <li class="emergency-step"><span class="n">3</span><p><b>寻求专业支持</b>如果危险正在发生，请立即拨打 120 / 110。也可以拨打全国心理援助热线 12356（以当地实际开通情况为准）。</p></li>
+        </ul>
+        <div class="crisis-lines">
+          <a class="crisis-line" href="tel:12356"><span>心理援助热线</span><b>12356</b></a>
+          <a class="crisis-line" href="tel:120"><span>急救</span><b>120</b></a>
+          <a class="crisis-line" href="tel:110"><span>报警</span><b>110</b></a>
+          <a class="crisis-line" href="tel:010-82951332"><span>北京心理危机干预中心</span><b>010-82951332</b></a>
+        </div>
+        <p class="crisis-note">栖心是自我探索工具，不是危机干预服务。如果你此刻无法保证自己的安全，请优先联系身边的人和急救资源，而不是独自留在这个页面里。</p>
+      </div>
+      <div class="modal-foot"><button class="primary-btn" type="button" data-close>我暂时还好</button></div>
+    </div>`, { focus: '.modal-close' });
+}
+
+async function testApiConnection(key, model) {
+  if (!key) throw new Error('NO_KEY');
+  const body = {
+    model: model || 'deepseek-chat',
+    messages: [
+      { role: 'system', content: '只回复一个字：好。' },
+      { role: 'user', content: '测试连接。' }
+    ],
+    stream: false,
+    max_tokens: 8
+  };
+  if (body.model !== 'deepseek-reasoner') body.temperature = 0.1;
+  let response;
+  try {
+    response = await fetch(endpointFrom(), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${key}`
+      },
+      body: JSON.stringify(body)
+    });
+  } catch (err) {
+    const error = new Error('NETWORK');
+    error.cause = err;
+    throw error;
+  }
+  if (!response.ok) {
+    let detail = '';
+    try {
+      const data = await response.json();
+      detail = data.error && (data.error.message || data.error.type) ? (data.error.message || data.error.type) : '';
+    } catch (_) { /* ignore */ }
+    const error = new Error(detail || `HTTP ${response.status}`);
+    error.status = response.status;
+    throw error;
+  }
+  return response.json();
+}
+
+function openSettings() {
+  const currentKey = getApiKey();
+  const remember = Boolean(localStorage.getItem(KEY_LOCAL));
+  const layer = openModal(`
+    <div class="modal wide" role="dialog" aria-modal="true" aria-label="设置与数据">
+      ${modalHead('SETTINGS & DATA', '设置与数据', 'V2 只用 AI 写“注脚”和润色，不让对话接管流程。')}
+      <div class="modal-body">
+        <section class="setting-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/><circle cx="12" cy="12" r="4"/></svg>DeepSeek 注脚</h3>
+          <p>连接后，每一层完成后会把该层记录发送给 DeepSeek，生成一段不提问的注脚。未连接时使用本地注脚，流程仍然完整。</p>
+          <div class="field">
+            <label class="field-label" for="apiKeyInput">API Key</label>
+            <div class="key-wrap">
+              <input id="apiKeyInput" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…">
+              <button class="key-toggle" id="keyToggle" type="button">显示</button>
+            </div>
+            <p class="help-note" style="margin-top:6px">还没有 Key？<a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noopener" style="color:var(--clay);text-decoration:underline;text-underline-offset:3px">去 DeepSeek 开放平台创建</a></p>
+          </div>
+          <label class="check-label"><input type="checkbox" id="rememberKey" ${remember ? 'checked' : ''}>在这台设备记住 Key</label>
+          <details class="advanced">
+            <summary>模型与注脚温度</summary>
+            <div class="advanced-body">
+              <div class="form-grid">
+                <div class="field">
+                  <label class="field-label" for="modelSelect">模型</label>
+                  <select id="modelSelect">
+                    <option value="deepseek-chat" ${state.settings.model === 'deepseek-chat' ? 'selected' : ''}>deepseek-chat</option>
+                    <option value="deepseek-reasoner" ${state.settings.model === 'deepseek-reasoner' ? 'selected' : ''}>deepseek-reasoner</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="temperatureInput">注脚温度</label>
+                  <input id="temperatureInput" type="range" min="0.3" max="1.2" step="0.05" value="${Number(state.settings.temperature) || 0.8}" style="margin-top:14px">
+                </div>
+              </div>
+              <p class="hint" style="margin-top:8px">接口地址固定为 <code>https://api.deepseek.com</code>，避免 Key 被发送到第三方地址。</p>
+            </div>
+          </details>
+          <div class="connection-status" id="connectionStatus"><span class="status-dot"></span><span>尚未测试连接。</span></div>
+          <div class="data-actions">
+            <button class="secondary-btn" type="button" id="testConnectionBtn">测试连接</button>
+            <button class="primary-btn" type="button" id="saveSettingsBtn">保存设置</button>
+            <button class="secondary-btn danger-btn" type="button" id="clearKeyBtn">清除浏览器中的 Key</button>
+          </div>
+          <div class="help-note">Key 只保存在你的浏览器，不会写入导出文件；接口固定为 DeepSeek 官方地址。请不要在公共电脑勾选“记住 Key”，也不要使用他人的 Key。清除浏览器 Key 不等于撤销服务端 Key，若曾泄露请到 DeepSeek 控制台撤销。</div>
+        </section>
+
+        <section class="setting-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M4 17v3h16v-3"/></svg>本次主线</h3>
+          <p>导出的 JSON 不包含 API Key。Markdown 更适合阅读和留存。</p>
+          <div class="data-actions">
+            <button class="secondary-btn" type="button" id="exportJsonBtn">导出全部数据</button>
+            <button class="secondary-btn" type="button" id="exportMdBtn">导出七幕档案</button>
+            <button class="secondary-btn danger-btn" type="button" id="resetBtn">重新开始这次</button>
+          </div>
+          <div class="help-note">“重新开始”会清空本次记录，但不会删除 API Key。</div>
+        </section>
+
+        <section class="setting-section">
+          <h3><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M12 21c-4.3-2.2-7-5.3-7-9a7 7 0 0 1 14 0c0 3.7-2.7 6.8-7 9z"/><path d="M12 8v4M12 15h.01"/></svg>关于七幕</h3>
+          <p>七幕完整走通：每幕三层、一次收束、一句带入。AI 只写“注脚”和润色，不接管流程；每一步都会把上一幕的内容带进来。</p>
+          <div class="data-actions">
+            <button class="secondary-btn" type="button" id="supportBtn2">打开即时支持</button>
+            <a class="secondary-btn" href="legal.html#privacy" target="_blank" rel="noopener">隐私说明</a>
+            <a class="secondary-btn" href="legal.html#disclaimer" target="_blank" rel="noopener">免责声明</a>
+          </div>
+        </section>
+      </div>
+      <div class="modal-foot"><button class="secondary-btn" type="button" data-close>完成</button></div>
+    </div>`, { focus: currentKey ? '#saveSettingsBtn' : '#apiKeyInput' });
+
+  const keyInput = $('#apiKeyInput', layer);
+  const rememberInput = $('#rememberKey', layer);
+  const modelSelect = $('#modelSelect', layer);
+  const tempInput = $('#temperatureInput', layer);
+  const status = $('#connectionStatus', layer);
+  keyInput.value = currentKey;
+
+  const setStatus = (type, text) => {
+    status.className = 'connection-status' + (type ? ' ' + type : '');
+    status.innerHTML = `<span class="status-dot"></span><span>${esc(text)}</span>`;
+  };
+  $('#keyToggle', layer).addEventListener('click', () => {
+    const visible = keyInput.type === 'text';
+    keyInput.type = visible ? 'password' : 'text';
+    $('#keyToggle', layer).textContent = visible ? '显示' : '隐藏';
+  });
+  $('#saveSettingsBtn', layer).addEventListener('click', () => {
+    storeApiKey(keyInput.value, rememberInput.checked);
+    state.settings.model = modelSelect.value;
+    state.settings.temperature = Number(tempInput.value) || 0.8;
+    saveNow();
+    renderCompanion();
+    renderStage();
+    closeModal(layer);
+    showToast(keyInput.value.trim() ? '设置已保存，栖心可以写注脚了。' : '设置已保存，当前使用本地注脚。');
+  });
+  $('#clearKeyBtn', layer).addEventListener('click', () => {
+    clearStoredApiKeys();
+    keyInput.value = '';
+    setStatus('ok', '浏览器中保存的 Key 已清除。');
+    renderCompanion();
+    showToast('已清除浏览器中的 API Key；如曾泄露，请到 DeepSeek 控制台撤销。', 4200);
+  });
+  $('#testConnectionBtn', layer).addEventListener('click', async () => {
+    const key = keyInput.value.trim();
+    if (!key) { setStatus('err', '请先填写 API Key。'); keyInput.focus(); return; }
+    setStatus('loading', '正在连接 DeepSeek…');
+    const button = $('#testConnectionBtn', layer);
+    button.disabled = true;
+    try {
+      await testApiConnection(key, modelSelect.value);
+      setStatus('ok', '连接成功。');
+      showToast('连接成功。');
+    } catch (err) {
+      setStatus('err', connectionErrorText(err));
+    } finally {
+      button.disabled = false;
+    }
+  });
+  $('#exportJsonBtn', layer).addEventListener('click', exportJSON);
+  $('#exportMdBtn', layer).addEventListener('click', exportMarkdown);
+  $('#supportBtn2', layer).addEventListener('click', () => {
+    closeModal(layer);
+    setTimeout(openSupport, 170);
+  });
+  let resetArmed = false;
+  let resetTimer = null;
+  const resetBtn = $('#resetBtn', layer);
+  resetBtn.addEventListener('click', () => {
+    if (!resetArmed) {
+      resetArmed = true;
+      resetBtn.textContent = '再点一次，确认清空';
+      resetTimer = setTimeout(() => { resetArmed = false; resetBtn.textContent = '重新开始这次'; }, 4000);
+      return;
+    }
+    clearTimeout(resetTimer);
+    if (reflectionController) reflectionController.abort();
+    reflectionSeq += 1;
+    const settings = clone(state.settings);
+    state = makeState();
+    state.settings = settings;
+    saveNow();
+    closeModal(layer);
+    renderAll();
+    showToast('这一次已经清空，可以重新开始。');
+  });
+}
+
+/* ---------------- export ---------------- */
+function downloadBlob(content, filename, type = 'text/plain;charset=utf-8') {
+  const blob = new Blob([content], { type });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function buildMarkdown() {
+  const lines = [];
+  lines.push('# 栖心 V2.1 · 七幕主线');
+  lines.push('');
+  lines.push(`生成时间：${formatDate()}`);
+  lines.push('');
+  lines.push('## 本次主线');
+  lines.push('');
+  STAGE_ORDER.forEach(id => {
+    lines.push(`### ${STAGE_META[id].label}`);
+    lines.push('');
+    lines.push(state.thread[id] || '尚未形成。');
+    lines.push('');
+  });
+  lines.push('## 详细记录');
+  lines.push('');
+  lines.push('### 看见');
+  lines.push(`- 具体时刻：${state.see.event || '未记录'}`);
+  lines.push(`- 情绪：${state.see.emotions.join('、') || '未记录'}`);
+  lines.push(`- 身体：${state.see.body.join('、') || '未记录'}`);
+  lines.push(`- 强度：${state.see.intensity}/10`);
+  if (state.see.felt) lines.push(`- 最难受的部分：${state.see.felt}`);
+  lines.push(`- 需要：${needText(state.see)}`);
+  if (state.see.need) lines.push(`- 它想说的话：${state.see.need}`);
+  lines.push('');
+  lines.push('### 溯源');
+  lines.push(`- 大约年龄：${state.trace.age || '未记录'}`);
+  lines.push(`- 更早的画面：${state.trace.earliest || '未记录'}`);
+  if (state.trace.childState) lines.push(`- 那个更小的你：${state.trace.childState}`);
+  if (state.trace.childNeed || state.trace.childNeedTags.length) lines.push(`- TA 的需要：${state.trace.childNeed || state.trace.childNeedTags.join('、')}`);
+  if (state.trace.protection || state.trace.protections.length) lines.push(`- 它曾经保护我：${state.trace.protection || state.trace.protections.join('、')}`);
+  if (state.trace.cost) lines.push(`- 付出的代价：${state.trace.cost}`);
+  if (state.trace.choice) lines.push(`- 现在我可以：${state.trace.choice}`);
+  lines.push('');
+  lines.push('### 哀悼');
+  if (state.mourn.loss || state.mourn.lossTags.length) lines.push(`- 失去的：${state.mourn.loss || state.mourn.lossTags.join('、')}`);
+  if (state.mourn.feelTags.length) lines.push(`- 感受：${state.mourn.feelTags.join('、')}`);
+  if (state.mourn.unsaid) lines.push(`- 没来得及说的：${state.mourn.unsaid}`);
+  if (state.mourn.farewell || state.mourn.farewellTags.length) lines.push(`- 我告别：${state.mourn.farewell || state.mourn.farewellTags.join('、')}`);
+  if (state.mourn.keep) lines.push(`- 我带走：${state.mourn.keep}`);
+  lines.push('');
+  lines.push('### 接纳');
+  if (state.accept.resist || state.accept.resistanceTags.length) lines.push(`- 仍在打架：${state.accept.resist || state.accept.resistanceTags.join('、')}`);
+  if (state.accept.allow || state.accept.kindnessTags.length) lines.push(`- 愿意对自己说：${state.accept.allow || state.accept.kindnessTags.join('、')}`);
+  if (state.accept.truth) lines.push(`- 我承认：${state.accept.truth}`);
+  if (state.accept.notGiveUp) lines.push(`- 但我仍然：${state.accept.notGiveUp}`);
+  lines.push('');
+  lines.push('### 重构');
+  if (state.reframe.thought) lines.push(`- 卡住的念头：${state.reframe.thought}`);
+  if (state.reframe.distortions.length) lines.push(`- 思维惯性：${state.reframe.distortions.join('、')}`);
+  if (state.reframe.facts) lines.push(`- 事实：${state.reframe.facts}`);
+  if (state.reframe.interpretation) lines.push(`- 当时的解释：${state.reframe.interpretation}`);
+  if (state.reframe.alternative) lines.push(`- 其他可能：${state.reframe.alternative}`);
+  if (state.reframe.newStory) lines.push(`- 更愿意相信：${state.reframe.newStory}`);
+  lines.push('');
+  lines.push('### 绽放');
+  if (state.bloom.strengths.length) lines.push(`- 认出的力量：${state.bloom.strengths.join('、')}`);
+  if (state.bloom.moments) lines.push(`- 有生命力的瞬间：${state.bloom.moments}`);
+  if (state.bloom.evidence) lines.push(`- 具体例子：${state.bloom.evidence}`);
+  if (state.bloom.support) lines.push(`- 支持资源：${state.bloom.support}`);
+  if (state.bloom.action) lines.push(`- 种下的小事：${state.bloom.action}`);
+  lines.push('');
+  lines.push('### 新生');
+  if (state.renew.narrative) lines.push(`- 新的开头：${state.renew.narrative}`);
+  if (state.renew.take) lines.push(`- 想带走：${state.renew.take}`);
+  if (state.renew.leave) lines.push(`- 想放下：${state.renew.leave}`);
+  if (state.renew.commitment) lines.push(`- 我愿意：${state.renew.commitment}`);
+  if (state.renew.anchors.length) lines.push(`- 日常锚点：${state.renew.anchors.join('、')}`);
+  lines.push('');
+  lines.push('---');
+  lines.push('由 栖心 V2 生成。这不是医疗诊断。');
+  return lines.join('\n');
+}
+function exportMarkdown() {
+  downloadBlob(buildMarkdown(), `栖心V2.1-七幕档案-${todayISO()}.md`, 'text/markdown;charset=utf-8');
+  showToast('档案已导出。');
+}
+function exportJSON() {
+  const data = clone(state);
+  data.exportedAt = new Date().toISOString();
+  data.app = '栖心 V2.1 · 七幕';
+  downloadBlob(JSON.stringify(data, null, 2), `栖心V2-数据备份-${todayISO()}.json`, 'application/json;charset=utf-8');
+  showToast('数据已导出。');
+}
+
+/* ---------------- safety ---------------- */
+function detectRisk(text) {
+  return /(自杀|自伤|不想活|活不下去|想死|结束生命|伤害自己|轻生|割腕|跳楼|活着没意思)/i.test(String(text || ''));
+}
+function offerSafetyNotice(text) {
+  if (!detectRisk(text)) return;
+  showToast('如果你此刻有伤害自己的念头，请先点右上角的支持按钮，或联系 120 / 110 / 12356。你不需要一个人扛。', 5200);
+}
+
+/* ---------------- toast ---------------- */
+function showToast(message, duration = 2600) {
+  const root = $('#toastRoot');
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = message;
+  root.appendChild(toast);
+  setTimeout(() => {
+    toast.classList.add('out');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+/* ---------------- render all / boot ---------------- */
+function renderAll() {
+  renderNav();
+  renderThread();
+  renderStage();
+  renderCompanion();
+}
+
+function bindEvents() {
+  $('#journeyNav').addEventListener('click', event => {
+    const button = event.target.closest('[data-stage]');
+    if (!button) return;
+    const id = button.dataset.stage;
+    if (!STAGE_META[id]) return;
+    switchStage(id);
+  });
+
+  const main = $('#stageMain');
+  main.addEventListener('click', handleStageClick);
+  main.addEventListener('input', handleStageInput);
+
+  $('#threadToggle').addEventListener('click', () => toggleThreadPanel());
+  $('#threadTopBtn').addEventListener('click', openThreadPanel);
+  $('#supportBtn').addEventListener('click', openSupport);
+  $('#settingsBtn').addEventListener('click', openSettings);
+  $('#settingsBtnTop').addEventListener('click', openSettings);
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape') {
+      const layers = $$('.modal-layer');
+      const top = layers[layers.length - 1];
+      if (top) closeModal(top);
+    }
+  });
+  window.addEventListener('beforeunload', saveNow);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') saveNow();
+  });
+}
+
+function init() {
+  state = loadState();
+  if (state.settings && Object.prototype.hasOwnProperty.call(state.settings, 'baseUrl')) {
+    delete state.settings.baseUrl;
+  }
+  if (!STAGE_META[state.stage]) state.stage = 'see';
+  STAGE_ORDER.forEach(stage => {
+    if (!state[stage] || typeof state[stage] !== 'object') state[stage] = makeState()[stage];
+    const d = state[stage];
+    if (d.step < 0 || d.step > 3) d.step = 0;
+    if (!Array.isArray(d.completed) || d.completed.length !== 4) d.completed = [false, false, false, false];
+  });
+  if (!isStageAvailable(state.stage)) {
+    state.stage = STAGE_ORDER.find(id => isStageAvailable(id) && !state[id].done) || 'see';
+  }
+  renderDate();
+  renderAll();
+  bindEvents();
+  showConsentIfNeeded();
+}
+
+init();
+
+
+
+</script>
+
+
+</body></html>
